@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # dayline
 
 A new Flutter project.
@@ -14,3 +15,6 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+=======
+# planner
+>>>>>>> 342becd37248e019327f2387d7d907cc6553d347
