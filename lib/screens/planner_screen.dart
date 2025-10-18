@@ -101,6 +101,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
           ),
           Expanded(
             child: PageView.builder(
+              key: ValueKey(Theme.of(context).brightness), // 👈 Forces rebuild when theme changes
               controller: _pageController,
               itemCount: windowDays,
               onPageChanged: (idx) {
