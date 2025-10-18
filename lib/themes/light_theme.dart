@@ -16,7 +16,7 @@ class AppTheme {
       secondary: accentColor,
     ),
     appBarTheme: AppBarTheme(
-      backgroundColor: primaryColor,
+      backgroundColor: backgroundColor,
       foregroundColor: Color.fromRGBO(39, 39, 37, 1.0),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -24,6 +24,11 @@ class AppTheme {
         backgroundColor: primaryColor,
         foregroundColor: Color.fromRGBO(39, 39, 37, 1.0),
       ),
+    ),
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: Color.fromRGBO(39, 39, 37, 1.0)),
+      bodyMedium: TextStyle(color: Color.fromRGBO(39, 39, 37, 1.0)),
+      bodySmall: TextStyle(color: Color.fromRGBO(39, 39, 37, 1.0))
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: primaryColor,

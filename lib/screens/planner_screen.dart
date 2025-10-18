@@ -56,19 +56,18 @@ class _PlannerScreenState extends State<PlannerScreen> {
     final provider = Provider.of<TaskProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dayline Planner'),
         actions: [
           IconButton(
             icon: const Icon(Icons.date_range),
             onPressed: () => Navigator.pushNamed(context, '/tasks'),
             tooltip: 'Tasks',
-          ),
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () => Navigator.pushNamed(context, '/profile'),
-            tooltip: 'Profile',
-          ),
+          )
         ],
+        leading: IconButton(
+          icon: const Icon(Icons.person),
+          onPressed: () => Navigator.pushNamed(context, '/profile'),
+          tooltip: 'Profile',
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -78,6 +77,19 @@ class _PlannerScreenState extends State<PlannerScreen> {
       ),
       body: Column(
         children: [
+          Align(
+            alignment: Alignment.centerLeft, // 👈 only this child is left-aligned
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 8.0), // 👈 space from the left
+              child: Text(
+                'Dayline Planner',
+                style: const TextStyle(
+                  fontSize: 45,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
           SizedBox(
             height: 100,
             child: HorizontalDates(
@@ -114,9 +126,10 @@ class _PlannerScreenState extends State<PlannerScreen> {
                             children: [
                               Row(
                                 children: [
-                                  Expanded(child: Text(labelForSection(s), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                                  Expanded(child: Text(labelForSection(s), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17))),
                                   IconButton(
                                     icon: const Icon(Icons.add),
+                                    color: Theme.of(context).colorScheme.primary,
                                     onPressed: () {
                                       Navigator.pushNamed(
                                         context,

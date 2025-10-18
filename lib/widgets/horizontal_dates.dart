@@ -19,15 +19,19 @@ class HorizontalDates extends StatefulWidget {
 
 class _HorizontalDatesState extends State<HorizontalDates> {
   late final ScrollController _scrollController;
+  int? _selectedIndex;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
 
+    // initialize selection to today
+    _selectedIndex = _findTodayIndex();
+
     // Scroll to today's index after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final todayIdx = _findTodayIndex();
+      final todayIdx = _selectedIndex ?? 0;
       _scrollToCenter(todayIdx);
     });
   }
@@ -62,42 +66,68 @@ class _HorizontalDatesState extends State<HorizontalDates> {
           final d = widget.dateForIndex(idx);
           final isToday = DateFormat('yyyy-MM-dd').format(d) ==
               DateFormat('yyyy-MM-dd').format(DateTime.now());
+          final isSelected = _selectedIndex == idx;
+
+          final primary = Theme.of(context).colorScheme.primary;
+          final onPrimary = Theme.of(context).colorScheme.onPrimary;
 
           return GestureDetector(
             onTap: () {
+              setState(() {
+                _selectedIndex = idx;
+              });
               widget.pageController.animateToPage(
                 idx,
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
               );
             },
-            child: Container(
-              width: 60,
-              margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
-              decoration: BoxDecoration(
-                color: isToday ? Theme.of(context).primaryColor : Color.fromRGBO(250, 246, 237, 1.0),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              alignment: Alignment.center,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    DateFormat.E().format(d),
-                    style: TextStyle(
-                      color: isToday ? Colors.white : Colors.black,
-                    ),
+            child: AnimatedScale(
+              scale: isSelected ? 1.12 : 1.0,
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                width: 60,
+                margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? primary
+                      : (isToday ? Theme.of(context).cardColor : const Color.fromRGBO(250, 246, 237, 1.0)),
+                  borderRadius: BorderRadius.circular(12),
+                  border: (isToday && !isSelected)
+                      ? Border.all(color: primary, width: 2)
+                      : null,
+                  boxShadow: isSelected
+                      ? [BoxShadow(color: primary.withOpacity(0.18), blurRadius: 12, offset: Offset(0, 2))]
+                      : [],
+                ),
+                alignment: Alignment.center,
+                child: AnimatedOpacity(
+                  opacity: isSelected ? 1.0 : 0.85,
+                  duration: const Duration(milliseconds: 220),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        DateFormat.E().format(d),
+                        style: TextStyle(
+                          color: isSelected ? onPrimary : (isToday ? primary : Colors.black),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        DateFormat.d().format(d),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: isSelected ? onPrimary : (isToday ? primary : Colors.black),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    DateFormat.d().format(d),
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: isToday ? Colors.white : Colors.black,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           );
