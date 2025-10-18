@@ -8,6 +8,7 @@ import 'package:dayline_planner/widgets/task_tile.dart';
 import 'create_task_screen.dart';
 
 class PlannerScreen extends StatefulWidget {
+  static const routeName = '/planner';
   const PlannerScreen({super.key});
 
   @override
