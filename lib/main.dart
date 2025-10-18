@@ -5,6 +5,7 @@ import 'package:dayline_planner/screens/planner_screen.dart';
 import 'package:dayline_planner/screens/create_task_screen.dart';
 import 'package:dayline_planner/screens/tasks_screen.dart';
 import 'package:dayline_planner/screens/profile_screen.dart';
+import 'package:dayline_planner/screens/splash_screen.dart';
 import 'package:dayline_planner/services/db_service.dart';
 
 void main() async {
@@ -21,18 +22,17 @@ class DaylineApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => TaskProvider()..loadAll(),
       child: MaterialApp(
-        title: 'Dayline Planner',
-        theme: ThemeData(
-          primarySwatch: Colors.green,
-        ),
-        initialRoute: '/',
-        routes: {
-          '/': (_) => const PlannerScreen(),
-          CreateTaskScreen.routeName: (_) => const CreateTaskScreen(),
-          TasksScreen.routeName: (_) => const TasksScreen(),
-          ProfileScreen.routeName: (_) => const ProfileScreen(),
-        },
-      ),
+      title: 'Dayline Planner',
+      theme: ThemeData(primarySwatch: Colors.green),
+      initialRoute: '/',
+      routes: {
+        '/': (_) => const SplashScreen(),
+        'PlannerScreen.routeName': (_) => const PlannerScreen(),
+        CreateTaskScreen.routeName: (_) => const CreateTaskScreen(),
+        TasksScreen.routeName: (_) => const TasksScreen(),
+        ProfileScreen.routeName: (_) => const ProfileScreen(),
+      },
+    ),
     );
   }
 }

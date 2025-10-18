@@ -14,7 +14,7 @@ class TasksScreen extends StatelessWidget {
     final today = DateTime.now();
     final days = List.generate(3, (i) => today.add(Duration(days: i)));
     return Scaffold(
-      appBar: AppBar(title: const Text('Tasks (today + 2 days)')),
+      appBar: AppBar(title: const Text('Tasks (upcoming days)')),
       body: ListView(
         children: days.map((d) {
           final tasks = provider.tasksForDate(d);
