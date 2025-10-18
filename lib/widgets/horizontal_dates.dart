@@ -75,7 +75,7 @@ class _HorizontalDatesState extends State<HorizontalDates> {
               width: 72,
               margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
               decoration: BoxDecoration(
-                color: isToday ? Colors.blue : Colors.grey.shade200,
+                color: isToday ? Theme.of(context).primaryColor : Colors.grey.shade200,
                 borderRadius: BorderRadius.circular(12),
               ),
               alignment: Alignment.center,

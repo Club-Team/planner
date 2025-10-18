@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:dayline_planner/providers/task_provider.dart';
 import 'package:dayline_planner/models/task_model.dart';
 import 'package:dayline_planner/widgets/horizontal_dates.dart';
-
+import 'package:dayline_planner/widgets/task_tile.dart';
 import 'create_task_screen.dart';
 
 class PlannerScreen extends StatefulWidget {
@@ -131,7 +131,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
                                 const Text('No tasks')
                               else
                                 Column(
-                                  children: sectionTasks.map((t) => _taskTile(t, day)).toList(),
+                                  children: sectionTasks.map((t) => TaskTile(task: t, date: day)).toList(),
                                 )
                             ],
                           ),
@@ -148,22 +148,4 @@ class _PlannerScreenState extends State<PlannerScreen> {
     );
   }
 
-
-  Widget _taskTile(TaskModel t, DateTime date) {
-    final provider = Provider.of<TaskProvider>(context);
-    final done = provider.isTaskCompletedOn(t, date);
-    return ListTile(
-      title: Text(t.title),
-      subtitle: t.description == null ? null : Text(t.description!),
-      trailing: Checkbox(
-        value: done,
-        onChanged: (v) {
-          provider.markCompleted(t, date, v ?? false);
-        },
-      ),
-      onLongPress: () {
-        // edit? not implemented fully; could route to create with editing
-      },
-    );
-  }
 }

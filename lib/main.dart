@@ -7,6 +7,7 @@ import 'package:dayline_planner/screens/tasks_screen.dart';
 import 'package:dayline_planner/screens/profile_screen.dart';
 import 'package:dayline_planner/screens/splash_screen.dart';
 import 'package:dayline_planner/services/db_service.dart';
+import 'package:dayline_planner/themes/light_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,7 +24,7 @@ class DaylineApp extends StatelessWidget {
       create: (_) => TaskProvider()..loadAll(),
       child: MaterialApp(
       title: 'Dayline Planner',
-      theme: ThemeData(primarySwatch: Colors.green),
+      theme: AppTheme.lightTheme, // use centralized theme
       initialRoute: '/',
       routes: {
         '/': (_) => const SplashScreen(),
