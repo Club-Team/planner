@@ -44,7 +44,7 @@ class _HorizontalDatesState extends State<HorizontalDates> {
   }
 
   void _scrollToCenter(int idx) {
-    const itemWidth = 72.0 + 12.0; // width + horizontal margin
+    const itemWidth = 60.0 + 12.0; // width + horizontal margin
     final screenWidth = MediaQuery.of(context).size.width;
     final offset = idx * itemWidth - (screenWidth / 2) + (itemWidth / 2);
     _scrollController.jumpTo(offset.clamp(0, _scrollController.position.maxScrollExtent));
