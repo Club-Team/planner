@@ -59,7 +59,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
         title: const Text('Dayline Planner'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.list_alt),
+            icon: const Icon(Icons.date_range),
             onPressed: () => Navigator.pushNamed(context, '/tasks'),
             tooltip: 'Tasks',
           ),
@@ -79,7 +79,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
       body: Column(
         children: [
           SizedBox(
-            height: 86,
+            height: 100,
             child: HorizontalDates(
               windowDays: windowDays,
               dateForIndex: dateForIndex,
@@ -105,6 +105,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
                     children: sections.map((s) {
                       final sectionTasks = tasks.where((t) => t.section == s).toList();
                       return Card(
+                        color: Theme.of(context).cardColor,
                         margin: const EdgeInsets.symmetric(vertical: 8),
                         child: Padding(
                           padding: const EdgeInsets.all(12),
@@ -113,7 +114,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
                             children: [
                               Row(
                                 children: [
-                                  Expanded(child: Text(labelForSection(s), style: const TextStyle(fontWeight: FontWeight.bold))),
+                                  Expanded(child: Text(labelForSection(s), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
                                   IconButton(
                                     icon: const Icon(Icons.add),
                                     onPressed: () {

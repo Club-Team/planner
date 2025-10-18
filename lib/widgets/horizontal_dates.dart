@@ -53,7 +53,7 @@ class _HorizontalDatesState extends State<HorizontalDates> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 86,
+      height: 100,
       child: ListView.builder(
         controller: _scrollController,
         scrollDirection: Axis.horizontal,
@@ -72,10 +72,10 @@ class _HorizontalDatesState extends State<HorizontalDates> {
               );
             },
             child: Container(
-              width: 72,
+              width: 60,
               margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
               decoration: BoxDecoration(
-                color: isToday ? Theme.of(context).primaryColor : Colors.grey.shade200,
+                color: isToday ? Theme.of(context).primaryColor : Color.fromRGBO(250, 246, 237, 1.0),
                 borderRadius: BorderRadius.circular(12),
               ),
               alignment: Alignment.center,

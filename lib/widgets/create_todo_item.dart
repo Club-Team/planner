@@ -93,7 +93,7 @@ class _CreateTodoItemState extends State<CreateTodoItem> {
 
     return Card(
       margin: const EdgeInsets.all(16),
-      elevation: 3,
+      elevation: 10,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),

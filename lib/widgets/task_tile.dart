@@ -47,10 +47,10 @@ class TaskTile extends StatelessWidget {
           width: 28,
           height: 28,
           decoration: BoxDecoration(
-            color: done ? Colors.green : Colors.transparent,
+            color: done ? const Color(0xFF4A9E99) : Colors.transparent,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: done ? Colors.green : Colors.grey,
+              color: done ? Color(0xFF4A9E99) : Colors.grey,
               width: 2,
             ),
           ),

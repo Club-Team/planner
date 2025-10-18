@@ -2,26 +2,27 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // Define colors
-  static final Color primaryColor = "#4a9e99".toColor();
-  static final Color backgroundColor = "#faf6f0".toColor();
+  static final Color primaryColor = "#559390".toColor();
+  static final Color backgroundColor = "#F7F0E6".toColor();
   static final Color accentColor = "#5a8282".toColor(); // optional
 
   // Main theme
   static final ThemeData lightTheme = ThemeData(
     primaryColor: primaryColor,
     scaffoldBackgroundColor: backgroundColor,
+    cardColor: Color.fromRGBO(250, 246, 237, 1.0),
     colorScheme: ColorScheme.light(
       primary: primaryColor,
       secondary: accentColor,
     ),
     appBarTheme: AppBarTheme(
       backgroundColor: primaryColor,
-      foregroundColor: Colors.white,
+      foregroundColor: Color.fromRGBO(39, 39, 37, 1.0),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
+        foregroundColor: Color.fromRGBO(39, 39, 37, 1.0),
       ),
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
