@@ -1,5 +1,7 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:dayline_planner/providers/task_provider.dart';
 import 'package:dayline_planner/screens/planner_screen.dart';
 import 'package:dayline_planner/screens/create_task_screen.dart';
@@ -10,7 +12,17 @@ import 'package:dayline_planner/services/db_service.dart';
 import 'package:dayline_planner/themes/light_theme.dart';
 
 void main() async {
+  // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize FFI bindings for desktop platforms
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    // Initialize FFI
+    sqfliteFfiInit();
+    // Change the default factory
+    databaseFactory = databaseFactoryFfi;
+  }
+  
   await DBService.instance.init();
   runApp(const DaylineApp());
 }
