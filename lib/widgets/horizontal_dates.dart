@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+typedef OnDateSelected = void Function(int idx);
+
 class HorizontalDates extends StatefulWidget {
   final int windowDays;
   final DateTime Function(int idx) dateForIndex;
-  final PageController pageController;
+  final int selectedIndex;
+  final OnDateSelected onSelected;
 
   const HorizontalDates({
     super.key,
     required this.windowDays,
     required this.dateForIndex,
-    required this.pageController,
+    required this.selectedIndex,
+    required this.onSelected,
   });
 
   @override
@@ -19,19 +23,16 @@ class HorizontalDates extends StatefulWidget {
 
 class _HorizontalDatesState extends State<HorizontalDates> {
   late final ScrollController _scrollController;
-  int? _selectedIndex;
+  // local scroll controller; selection is held by parent
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
 
-    // initialize selection to today
-    _selectedIndex = _findTodayIndex();
-
     // Scroll to today's index after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final todayIdx = _selectedIndex ?? 0;
+      final todayIdx = _findTodayIndex();
       _scrollToCenter(todayIdx);
     });
   }
@@ -66,21 +67,15 @@ class _HorizontalDatesState extends State<HorizontalDates> {
           final d = widget.dateForIndex(idx);
           final isToday = DateFormat('yyyy-MM-dd').format(d) ==
               DateFormat('yyyy-MM-dd').format(DateTime.now());
-          final isSelected = _selectedIndex == idx;
+          final isSelected = widget.selectedIndex == idx;
 
           final primary = Theme.of(context).colorScheme.primary;
           final onPrimary = Theme.of(context).colorScheme.onPrimary;
 
           return GestureDetector(
             onTap: () {
-              setState(() {
-                _selectedIndex = idx;
-              });
-              widget.pageController.animateToPage(
-                idx,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
+              widget.onSelected(idx);
+              _scrollToCenter(idx);
             },
             child: AnimatedScale(
               scale: isSelected ? 1.12 : 1.0,

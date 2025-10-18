@@ -15,16 +15,15 @@ class PlannerScreen extends StatefulWidget {
 }
 
 class _PlannerScreenState extends State<PlannerScreen> {
-  late PageController _pageController;
   final int windowDays = 21; // show +/- 10 days
   late int centerIndex;
-  DateTime baseDate = DateTime.now();
+  late int selectedDayIndex;
 
   @override
   void initState() {
     super.initState();
     centerIndex = windowDays ~/ 2;
-    _pageController = PageController(initialPage: centerIndex);
+    selectedDayIndex = centerIndex;
   }
 
   DateTime dateForIndex(int idx) {
@@ -95,69 +94,86 @@ class _PlannerScreenState extends State<PlannerScreen> {
             child: HorizontalDates(
               windowDays: windowDays,
               dateForIndex: dateForIndex,
-              pageController: _pageController,
+              selectedIndex: selectedDayIndex,
+              onSelected: (idx) {
+                if (idx != selectedDayIndex) {
+                  setState(() => selectedDayIndex = idx);
+                }
+              },
             ),
           ),
           Expanded(
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: windowDays,
-              onPageChanged: (idx) {
-                setState(() {
-                  baseDate = dateForIndex(idx);
-                });
-              },
-              itemBuilder: (context, idx) {
-                final day = dateForIndex(idx);
-                final tasks = provider.tasksForDate(day);
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: sections.map((s) {
-                      final sectionTasks = tasks.where((t) => t.section == s).toList();
-                      return Card(
-                        color: Theme.of(context).cardColor,
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(child: Text(labelForSection(s), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17))),
-                                  IconButton(
-                                    icon: const Icon(Icons.add),
-                                    color: Theme.of(context).colorScheme.primary,
-                                    onPressed: () {
-                                      Navigator.pushNamed(
-                                        context,
-                                        CreateTaskScreen.routeName,
-                                        arguments: {'defaultDate': day, 'defaultSection': s},
-                                      );
-                                    },
-                                  )
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              if (sectionTasks.isEmpty)
-                                const Text('No tasks')
-                              else
-                                Column(
-                                  children: sectionTasks.map((t) => TaskTile(task: t, date: day)).toList(),
-                                )
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              transitionBuilder: (child, animation) {
+                return ScaleTransition(
+                  scale: Tween<double>(begin: 0.95, end: 1.00).animate(
+                    CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
                   ),
+                  child: child,
                 );
               },
+              layoutBuilder: (currentChild, previousChildren) {
+                return currentChild ?? const SizedBox();
+              },
+              child: KeyedSubtree(
+                key: ValueKey<int>(selectedDayIndex), // key depends on selectedDayIndex
+                child: _buildDayContent(
+                  dateForIndex(selectedDayIndex),
+                  provider,
+                ),
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDayContent(DateTime day, TaskProvider provider) {
+    final tasks = provider.tasksForDate(day);
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: sections.map((s) {
+          final sectionTasks = tasks.where((t) => t.section == s).toList();
+          return Card(
+            color: Theme.of(context).cardColor,
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(child: Text(labelForSection(s), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17))),
+                      IconButton(
+                        icon: const Icon(Icons.add),
+                        color: Theme.of(context).colorScheme.primary,
+                        onPressed: () {
+                          Navigator.pushNamed(
+                            context,
+                            CreateTaskScreen.routeName,
+                            arguments: {'defaultDate': day, 'defaultSection': s},
+                          );
+                        },
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  if (sectionTasks.isEmpty)
+                    const Text('No tasks')
+                  else
+                    Column(
+                      children: sectionTasks.map((t) => TaskTile(task: t, date: day)).toList(),
+                    )
+                ],
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
