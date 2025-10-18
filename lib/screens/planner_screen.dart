@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:dayline_planner/providers/task_provider.dart';
 import 'package:dayline_planner/models/task_model.dart';
+import 'package:dayline_planner/widgets/horizontal_dates.dart';
+
 import 'create_task_screen.dart';
 
 class PlannerScreen extends StatefulWidget {
@@ -78,7 +80,11 @@ class _PlannerScreenState extends State<PlannerScreen> {
         children: [
           SizedBox(
             height: 86,
-            child: _buildHorizontalDates(),
+            child: HorizontalDates(
+              windowDays: windowDays,
+              dateForIndex: dateForIndex,
+              pageController: _pageController,
+            ),
           ),
           Expanded(
             child: PageView.builder(
@@ -142,41 +148,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
     );
   }
 
-  Widget _buildHorizontalDates() {
-    return SizedBox(
-      height: 86,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: windowDays,
-        itemBuilder: (context, idx) {
-          final d = dateForIndex(idx);
-          final isToday = DateFormat('yyyy-MM-dd').format(d) == DateFormat('yyyy-MM-dd').format(DateTime.now());
-          return GestureDetector(
-            onTap: () {
-              _pageController.animateToPage(idx, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-            },
-            child: Container(
-              width: 72,
-              margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
-              decoration: BoxDecoration(
-                color: isToday ? Colors.blue : Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              alignment: Alignment.center,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(DateFormat.E().format(d), style: TextStyle(color: isToday ? Colors.white : Colors.black)),
-                  const SizedBox(height: 6),
-                  Text(DateFormat.d().format(d), style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isToday ? Colors.white : Colors.black)),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
 
   Widget _taskTile(TaskModel t, DateTime date) {
     final provider = Provider.of<TaskProvider>(context);
