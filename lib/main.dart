@@ -23,16 +23,17 @@ class DaylineApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => TaskProvider()..loadAll(),
       child: MaterialApp(
-      title: 'Dayline Planner',
-      theme: AppTheme.lightTheme, // use centralized theme
-      initialRoute: '/',
-      routes: {
-        '/': (_) => const SplashScreen(),
-        'PlannerScreen.routeName': (_) => const PlannerScreen(),
-        CreateTaskScreen.routeName: (_) => const CreateTaskScreen(),
-        TasksScreen.routeName: (_) => const TasksScreen(),
-        ProfileScreen.routeName: (_) => const ProfileScreen(),
-      },
+        debugShowCheckedModeBanner: false,
+        title: 'Dayline Planner',
+        theme: AppTheme.lightTheme, // use centralized theme
+        initialRoute: '/',
+        routes: {
+          '/': (_) => const SplashScreen(),
+          'PlannerScreen.routeName': (_) => const PlannerScreen(),
+          CreateTaskScreen.routeName: (_) => const CreateTaskScreen(),
+          TasksScreen.routeName: (_) => const TasksScreen(),
+          ProfileScreen.routeName: (_) => const ProfileScreen(),
+        },
     ),
     );
   }
