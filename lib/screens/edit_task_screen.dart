@@ -24,9 +24,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   late List<int> _weekdays;
   late DateTime _date;
 
-  final Color primaryColor = const Color.fromRGBO(90, 130, 130, 1);
-  final Color backgroundColor = const Color.fromRGBO(247, 240, 22, 1);
-
   @override
   void initState() {
     super.initState();
@@ -46,6 +43,13 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       initialDate: _date,
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
+      builder: (context, child) {
+        // make date picker also follow theme
+        return Theme(
+          data: Theme.of(context),
+          child: child!,
+        );
+      },
     );
     if (picked != null) setState(() => _date = picked);
   }
@@ -82,10 +86,12 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
 
     if (widget.task == null) {
       provider.addTask(updatedTask);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Task created!')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Task created!')));
     } else {
       provider.updateTask(updatedTask);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Task updated!')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Task updated!')));
     }
 
     Navigator.pop(context);
@@ -95,21 +101,24 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     final provider = Provider.of<TaskProvider>(context, listen: false);
     if (widget.task != null) {
       provider.deleteTask(widget.task!);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Task deleted')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Task deleted')));
     }
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     final isEdit = widget.task != null;
     final dateStr = DateFormat('yMMMd').format(_date);
 
     return Scaffold(
-      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: Text(isEdit ? 'Edit Task' : 'Create Task'),
-        backgroundColor: primaryColor,
         actions: [
           if (isEdit)
             IconButton(
@@ -125,19 +134,19 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildLabel('Title'),
+              _buildLabel('Title', textTheme, colorScheme),
               TextFormField(
                 initialValue: _title,
-                decoration: _inputDecoration('Enter task title'),
+                decoration: _inputDecoration('Enter task title', theme),
                 validator: (v) => v == null || v.isEmpty ? 'Enter a title' : null,
                 onChanged: (v) => _title = v,
               ),
               const SizedBox(height: 16),
-              _buildLabel('Description'),
+              _buildLabel('Description', textTheme, colorScheme),
               TextFormField(
                 initialValue: _description,
                 maxLines: 3,
-                decoration: _inputDecoration('Enter description'),
+                decoration: _inputDecoration('Enter description', theme),
                 onChanged: (v) => _description = v,
               ),
               const SizedBox(height: 20),
@@ -145,22 +154,22 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                 title: const Text('Recurring task'),
                 value: _isRecurring,
                 onChanged: (v) => setState(() => _isRecurring = v),
-                activeColor: primaryColor,
+                activeColor: colorScheme.primary,
               ),
               if (!_isRecurring) ...[
-                _buildLabel('Date'),
+                _buildLabel('Date', textTheme, colorScheme),
                 OutlinedButton.icon(
                   onPressed: _pickDate,
                   icon: const Icon(Icons.calendar_today),
                   label: Text(dateStr),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: primaryColor,
-                    side: BorderSide(color: primaryColor),
+                    foregroundColor: colorScheme.primary,
+                    side: BorderSide(color: colorScheme.primary),
                   ),
                 ),
               ],
               if (_isRecurring) ...[
-                _buildLabel('Recurrence'),
+                _buildLabel('Recurrence', textTheme, colorScheme),
                 DropdownButtonFormField<RecurrenceType>(
                   value: _recurrenceType,
                   items: RecurrenceType.values
@@ -171,7 +180,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                           ))
                       .toList(),
                   onChanged: (val) => setState(() => _recurrenceType = val!),
-                  decoration: _inputDecoration('Recurrence type'),
+                  decoration: _inputDecoration('Recurrence type', theme),
                 ),
                 if (_recurrenceType == RecurrenceType.specificWeekDays) ...[
                   const SizedBox(height: 10),
@@ -179,14 +188,19 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                     spacing: 8,
                     children: List.generate(7, (i) {
                       final dayNum = i + 1;
-                      final dayName = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i];
+                      final dayName = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i];
                       final selected = _weekdays.contains(dayNum);
                       return FilterChip(
                         label: Text(dayName),
                         selected: selected,
                         onSelected: (_) => _toggleWeekday(dayNum),
-                        selectedColor: primaryColor.withOpacity(0.2),
-                        checkmarkColor: primaryColor,
+                        selectedColor: colorScheme.primary.withOpacity(0.2),
+                        checkmarkColor: colorScheme.primary,
+                        labelStyle: TextStyle(
+                          color: selected
+                              ? colorScheme.primary
+                              : textTheme.bodyMedium?.color,
+                        ),
                       );
                     }),
                   ),
@@ -200,8 +214,9 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   label: Text(isEdit ? 'Save Changes' : 'Create Task'),
                   onPressed: _saveTask,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: theme.elevatedButtonTheme.style?.foregroundColor?.resolve({}) ??
+                        Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -216,20 +231,29 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     );
   }
 
-  InputDecoration _inputDecoration(String label) => InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: primaryColor, width: 2),
-          borderRadius: BorderRadius.circular(10),
-        ),
-      );
+  InputDecoration _inputDecoration(String label, ThemeData theme) {
+    final base = theme.inputDecorationTheme;
+    return InputDecoration(
+      labelText: label,
+      border: base.border,
+      focusedBorder: base.focusedBorder,
+      enabledBorder: base.enabledBorder,
+      filled: base.filled,
+      fillColor: base.fillColor,
+      contentPadding: base.contentPadding,
+    );
+  }
 
-  Widget _buildLabel(String text) => Padding(
+
+  Widget _buildLabel(String text, TextTheme textTheme, ColorScheme colorScheme) =>
+      Padding(
         padding: const EdgeInsets.only(bottom: 6),
         child: Text(
           text,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryColor),
+          style: textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: colorScheme.primary,
+          ),
         ),
       );
 }
