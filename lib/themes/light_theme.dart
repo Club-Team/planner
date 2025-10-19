@@ -35,8 +35,24 @@ class AppTheme {
       backgroundColor: primaryColor,
     ),
     switchTheme: SwitchThemeData(
-      thumbColor: MaterialStateProperty.all(primaryColor),
-      trackColor: MaterialStateProperty.all(primaryColor.withOpacity(0.4)),
+      thumbColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
+          return primaryColor; // Thumb when ON
+        }
+        return Colors.grey.shade500; // Thumb when OFF (darker for contrast)
+      }),
+      trackColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
+          return primaryColor.withOpacity(0.7); // Track when ON (more visible)
+        }
+        return Colors.grey.shade400.withOpacity(0.3); // Track when OFF (more muted)
+      }),
+      overlayColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.pressed)) {
+          return primaryColor.withOpacity(0.3); // Ripple when pressed (slightly stronger)
+        }
+        return Colors.transparent;
+      }),
     ),
     inputDecorationTheme: InputDecorationTheme(
       border: OutlineInputBorder(
