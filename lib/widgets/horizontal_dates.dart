@@ -23,14 +23,12 @@ class HorizontalDates extends StatefulWidget {
 
 class _HorizontalDatesState extends State<HorizontalDates> {
   late final ScrollController _scrollController;
-  // local scroll controller; selection is held by parent
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
 
-    // Scroll to today's index after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final todayIdx = _findTodayIndex();
       _scrollToCenter(todayIdx);
@@ -49,14 +47,22 @@ class _HorizontalDatesState extends State<HorizontalDates> {
   }
 
   void _scrollToCenter(int idx) {
-    const itemWidth = 60.0 + 12.0; // width + horizontal margin
+    const itemWidth = 60.0 + 12.0;
     final screenWidth = MediaQuery.of(context).size.width;
     final offset = idx * itemWidth - (screenWidth / 2) + (itemWidth / 2);
-    _scrollController.jumpTo(offset.clamp(0, _scrollController.position.maxScrollExtent));
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(
+        offset.clamp(0, _scrollController.position.maxScrollExtent),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return SizedBox(
       height: 100,
       child: ListView.builder(
@@ -69,8 +75,21 @@ class _HorizontalDatesState extends State<HorizontalDates> {
               DateFormat('yyyy-MM-dd').format(DateTime.now());
           final isSelected = widget.selectedIndex == idx;
 
-          final primary = Theme.of(context).colorScheme.primary;
-          final onPrimary = Theme.of(context).colorScheme.onPrimary;
+          final Color backgroundColor = isSelected
+              ? colorScheme.primary
+              : (isToday
+                  ? colorScheme.surfaceContainerHighest
+                  : colorScheme.surfaceContainerLow);
+
+          final Color textColor = isSelected
+              ? colorScheme.onPrimary
+              : (isToday
+                  ? colorScheme.primary
+                  : colorScheme.onSurface);
+
+          final BoxBorder? border = (isToday && !isSelected)
+              ? Border.all(color: colorScheme.primary, width: 2)
+              : null;
 
           return GestureDetector(
             onTap: () {
@@ -79,7 +98,7 @@ class _HorizontalDatesState extends State<HorizontalDates> {
             },
             child: AnimatedScale(
               scale: isSelected ? 1.12 : 1.0,
-              duration: const Duration(milliseconds: 220),
+              duration: const Duration(milliseconds: 200),
               curve: Curves.easeOutCubic,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 220),
@@ -87,15 +106,17 @@ class _HorizontalDatesState extends State<HorizontalDates> {
                 width: 60,
                 margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? primary
-                      : (isToday ? Theme.of(context).cardColor : const Color.fromRGBO(250, 246, 237, 1.0)),
+                  color: backgroundColor,
                   borderRadius: BorderRadius.circular(12),
-                  border: (isToday && !isSelected)
-                      ? Border.all(color: primary, width: 2)
-                      : null,
+                  border: border,
                   boxShadow: isSelected
-                      ? [BoxShadow(color: primary.withOpacity(0.18), blurRadius: 12, offset: Offset(0, 2))]
+                      ? [
+                          BoxShadow(
+                            color: colorScheme.primary.withOpacity(0.25),
+                            blurRadius: 12,
+                            offset: const Offset(0, 2),
+                          )
+                        ]
                       : [],
                 ),
                 alignment: Alignment.center,
@@ -107,17 +128,14 @@ class _HorizontalDatesState extends State<HorizontalDates> {
                     children: [
                       Text(
                         DateFormat.E().format(d),
-                        style: TextStyle(
-                          color: isSelected ? onPrimary : (isToday ? primary : Colors.black),
-                        ),
+                        style: textTheme.bodySmall?.copyWith(color: textColor),
                       ),
                       const SizedBox(height: 6),
                       Text(
                         DateFormat.d().format(d),
-                        style: TextStyle(
-                          fontSize: 20,
+                        style: textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: isSelected ? onPrimary : (isToday ? primary : Colors.black),
+                          color: textColor,
                         ),
                       ),
                     ],
