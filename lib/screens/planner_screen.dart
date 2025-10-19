@@ -115,7 +115,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
           ),
           Expanded(
             child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 400),
               transitionBuilder: (child, animation) => FadeTransition(
                 opacity: CurvedAnimation(
                   parent: animation,

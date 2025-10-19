@@ -51,8 +51,10 @@ class _HorizontalDatesState extends State<HorizontalDates> {
     final screenWidth = MediaQuery.of(context).size.width;
     final offset = idx * itemWidth - (screenWidth / 2) + (itemWidth / 2);
     if (_scrollController.hasClients) {
-      _scrollController.jumpTo(
+      _scrollController.animateTo(
         offset.clamp(0, _scrollController.position.maxScrollExtent),
+        duration: const Duration(milliseconds: 300), // how long the scroll takes
+        curve: Curves.easeInOut, // how the motion feels
       );
     }
   }
@@ -77,9 +79,7 @@ class _HorizontalDatesState extends State<HorizontalDates> {
 
           final Color backgroundColor = isSelected
               ? colorScheme.primary
-              : (isToday
-                  ? colorScheme.surfaceContainerHighest
-                  : colorScheme.surfaceContainerLow);
+              : theme.cardColor;
 
           final Color textColor = isSelected
               ? colorScheme.onPrimary
@@ -98,10 +98,10 @@ class _HorizontalDatesState extends State<HorizontalDates> {
             },
             child: AnimatedScale(
               scale: isSelected ? 1.12 : 1.0,
-              duration: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 500),
               curve: Curves.easeOutCubic,
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 220),
+                duration: const Duration(milliseconds: 500),
                 curve: Curves.easeOutCubic,
                 width: 60,
                 margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
@@ -122,7 +122,7 @@ class _HorizontalDatesState extends State<HorizontalDates> {
                 alignment: Alignment.center,
                 child: AnimatedOpacity(
                   opacity: isSelected ? 1.0 : 0.85,
-                  duration: const Duration(milliseconds: 220),
+                  duration: const Duration(milliseconds: 300),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [

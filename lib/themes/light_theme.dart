@@ -18,6 +18,7 @@ class AppTheme {
     appBarTheme: AppBarTheme(
       backgroundColor: backgroundColor,
       foregroundColor: Color.fromRGBO(39, 39, 37, 1.0),
+      surfaceTintColor: Colors.transparent,
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(

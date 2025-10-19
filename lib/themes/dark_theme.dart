@@ -16,8 +16,9 @@ class DarkAppTheme {
       secondary: accentColor,
     ),
     appBarTheme: AppBarTheme(
-      backgroundColor: const Color(0xFF1E1E1E),
+      backgroundColor: backgroundColor,
       foregroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -34,9 +35,26 @@ class DarkAppTheme {
       backgroundColor: primaryColor,
     ),
     switchTheme: SwitchThemeData(
-      thumbColor: MaterialStateProperty.all(primaryColor),
-      trackColor: MaterialStateProperty.all(primaryColor.withOpacity(0.4)),
-    ),
+      thumbColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
+          return primaryColor; // Thumb color when ON
+        }
+        return Colors.grey.shade400; // Thumb color when OFF
+      }),
+      trackColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
+          return primaryColor.withOpacity(0.5); // Track when ON
+        }
+        return Colors.grey.shade700.withOpacity(0.4); // Track when OFF
+      }),
+      overlayColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.pressed)) {
+          return primaryColor.withOpacity(0.2); // Ripple effect
+        }
+        return Colors.transparent;
+      }),
+    )
+    ,
     inputDecorationTheme: InputDecorationTheme(
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
