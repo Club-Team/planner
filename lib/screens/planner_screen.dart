@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import 'package:dayline_planner/providers/task_provider.dart';
 import 'package:dayline_planner/models/task_model.dart';
 import 'package:dayline_planner/widgets/horizontal_dates.dart';
 import 'package:dayline_planner/widgets/task_tile.dart';
-import 'edit_task_screen.dart';
+import 'package:dayline_planner/screens/edit_task_screen.dart';
 
 class PlannerScreen extends StatefulWidget {
   static const routeName = '/planner';
@@ -16,16 +15,21 @@ class PlannerScreen extends StatefulWidget {
 }
 
 class _PlannerScreenState extends State<PlannerScreen> {
-  late PageController _pageController;
-  final int windowDays = 21; // show +/- 10 days
+  final int windowDays = 21; // +/- 10 days around today
   late int centerIndex;
-  DateTime baseDate = DateTime.now();
+  late int selectedDayIndex;
 
   @override
   void initState() {
     super.initState();
     centerIndex = windowDays ~/ 2;
-    _pageController = PageController(initialPage: centerIndex);
+    selectedDayIndex = centerIndex;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    setState(() {}); // Rebuild on theme change
   }
 
   DateTime dateForIndex(int idx) {
@@ -36,15 +40,15 @@ class _PlannerScreenState extends State<PlannerScreen> {
   String labelForSection(String key) {
     switch (key) {
       case 'wake':
-        return 'Wake up (6-8)';
+        return 'Wake up (6–8)';
       case 'morning':
-        return 'Morning (8-12)';
+        return 'Morning (8–12)';
       case 'noon':
-        return 'Noon (12-13)';
+        return 'Noon (12–13)';
       case 'afternoon':
-        return 'Afternoon (13-17)';
+        return 'Afternoon (13–17)';
       case 'evening':
-        return 'Evening (17-22)';
+        return 'Evening (17–22)';
       default:
         return key;
     }
@@ -55,39 +59,42 @@ class _PlannerScreenState extends State<PlannerScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<TaskProvider>(context);
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.person),
+          tooltip: 'Profile',
+          onPressed: () => Navigator.pushNamed(context, '/profile'),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.date_range),
-            onPressed: () => Navigator.pushNamed(context, '/tasks'),
             tooltip: 'Tasks',
-          )
+            onPressed: () => Navigator.pushNamed(context, '/tasks'),
+          ),
         ],
-        leading: IconButton(
-          icon: const Icon(Icons.person),
-          onPressed: () => Navigator.pushNamed(context, '/profile'),
-          tooltip: 'Profile',
-        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await Navigator.push(context, MaterialPageRoute(
-                                          builder: (_) => EditTaskScreen(task: null),
-                                        ));
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const EditTaskScreen(task: null)),
+          );
         },
         child: const Icon(Icons.add),
       ),
       body: Column(
         children: [
           Align(
-            alignment: Alignment.centerLeft, // 👈 only this child is left-aligned
+            alignment: Alignment.centerLeft,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 8.0), // 👈 space from the left
-              child: Text(
+              padding: const EdgeInsets.fromLTRB(16, 0, 0, 8),
+              child: const Text(
                 'Dayline Planner',
-                style: const TextStyle(
-                  fontSize: 45,
+                style: TextStyle(
+                  fontSize: 42,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -98,68 +105,36 @@ class _PlannerScreenState extends State<PlannerScreen> {
             child: HorizontalDates(
               windowDays: windowDays,
               dateForIndex: dateForIndex,
-              pageController: _pageController,
+              selectedIndex: selectedDayIndex,
+              onSelected: (idx) {
+                if (idx != selectedDayIndex) {
+                  setState(() => selectedDayIndex = idx);
+                }
+              },
             ),
           ),
           Expanded(
-            child: PageView.builder(
-              key: ValueKey(Theme.of(context).brightness), // 👈 Forces rebuild when theme changes
-              controller: _pageController,
-              itemCount: windowDays,
-              onPageChanged: (idx) {
-                setState(() {
-                  baseDate = dateForIndex(idx);
-                });
-              },
-              itemBuilder: (context, idx) {
-                final day = dateForIndex(idx);
-                final tasks = provider.tasksForDate(day);
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: sections.map((s) {
-                      final sectionTasks = tasks.where((t) => t.section == s).toList();
-                      return Card(
-                        color: Theme.of(context).cardColor,
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(child: Text(labelForSection(s), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17))),
-                                  IconButton(
-                                    icon: const Icon(Icons.add),
-                                    color: Theme.of(context).colorScheme.primary,
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => EditTaskScreen(task: null),
-                                        )
-                                      );
-                                    },
-                                  )
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              if (sectionTasks.isEmpty)
-                                const Text('No tasks')
-                              else
-                                Column(
-                                  children: sectionTasks.map((t) => TaskTile(task: t, date: day)).toList(),
-                                )
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                );
-              },
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeInOutCubic,
+                ),
+                child: ScaleTransition(
+                  scale: Tween(begin: 0.97, end: 1.0).animate(animation),
+                  child: child,
+                ),
+              ),
+              layoutBuilder: (currentChild, _) => currentChild ?? const SizedBox(),
+              child: KeyedSubtree(
+                key: ValueKey<int>(selectedDayIndex),
+                child: _buildDayContent(
+                  dateForIndex(selectedDayIndex),
+                  provider,
+                  theme,
+                ),
+              ),
             ),
           ),
         ],
@@ -167,4 +142,71 @@ class _PlannerScreenState extends State<PlannerScreen> {
     );
   }
 
+  Widget _buildDayContent(DateTime day, TaskProvider provider, ThemeData theme) {
+    final tasks = provider.tasksForDate(day);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: sections.map((section) {
+          final sectionTasks = tasks.where((t) => t.section == section).toList();
+
+          return Card(
+            color: theme.cardColor,
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            elevation: 2,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          labelForSection(section),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add),
+                        color: theme.colorScheme.primary,
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const EditTaskScreen(task: null),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  if (sectionTasks.isEmpty)
+                    Text(
+                      'No tasks',
+                      style: theme.textTheme.bodyMedium,
+                    )
+                  else
+                    Column(
+                      children: sectionTasks
+                          .map((t) => TaskTile(task: t, date: day))
+                          .toList(),
+                    ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
 }
