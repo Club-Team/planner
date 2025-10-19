@@ -77,9 +77,10 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       isRecurring: _isRecurring,
       recurrenceType: _isRecurring ? _recurrenceType : RecurrenceType.none,
       everyNDays: _everyNDays,
-      weekdays: _isRecurring && _recurrenceType == RecurrenceType.specificWeekDays
-          ? _weekdays
-          : [],
+      weekdays:
+          _isRecurring && _recurrenceType == RecurrenceType.specificWeekDays
+              ? _weekdays
+              : [],
       date: _date,
       createdAt: widget.task?.createdAt,
     );
@@ -138,7 +139,8 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
               TextFormField(
                 initialValue: _title,
                 decoration: _inputDecoration('Enter task title', theme),
-                validator: (v) => v == null || v.isEmpty ? 'Enter a title' : null,
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'Enter a title' : null,
                 onChanged: (v) => _title = v,
               ),
               const SizedBox(height: 16),
@@ -171,7 +173,10 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
               if (_isRecurring) ...[
                 _buildLabel('Recurrence', textTheme, colorScheme),
                 DropdownButtonFormField<RecurrenceType>(
-                  value: _recurrenceType,
+                  value: _recurrenceType == RecurrenceType.none
+                      ? null
+                      : _recurrenceType,
+                  hint: const Text('Select recurrence type'),
                   items: RecurrenceType.values
                       .where((r) => r != RecurrenceType.none)
                       .map((r) => DropdownMenuItem(
@@ -179,7 +184,8 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                             child: Text(r.name),
                           ))
                       .toList(),
-                  onChanged: (val) => setState(() => _recurrenceType = val!),
+                  onChanged: (val) => setState(
+                      () => _recurrenceType = val ?? RecurrenceType.none),
                   decoration: _inputDecoration('Recurrence type', theme),
                 ),
                 if (_recurrenceType == RecurrenceType.specificWeekDays) ...[
@@ -188,7 +194,8 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                     spacing: 8,
                     children: List.generate(7, (i) {
                       final dayNum = i + 1;
-                      final dayName = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i];
+                      final dayName =
+                          ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i];
                       final selected = _weekdays.contains(dayNum);
                       return FilterChip(
                         label: Text(dayName),
@@ -215,7 +222,9 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   onPressed: _saveTask,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.primary,
-                    foregroundColor: theme.elevatedButtonTheme.style?.foregroundColor?.resolve({}) ??
+                    foregroundColor: theme
+                            .elevatedButtonTheme.style?.foregroundColor
+                            ?.resolve({}) ??
                         Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
@@ -244,8 +253,8 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     );
   }
 
-
-  Widget _buildLabel(String text, TextTheme textTheme, ColorScheme colorScheme) =>
+  Widget _buildLabel(
+          String text, TextTheme textTheme, ColorScheme colorScheme) =>
       Padding(
         padding: const EdgeInsets.only(bottom: 6),
         child: Text(
