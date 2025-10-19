@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dayline_planner/providers/task_provider.dart';
@@ -5,9 +6,12 @@ import 'package:dayline_planner/models/task_model.dart';
 import 'package:dayline_planner/widgets/horizontal_dates.dart';
 import 'package:dayline_planner/widgets/task_tile.dart';
 import 'package:dayline_planner/screens/edit_task_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dayline_planner/providers/section_provider.dart';
 
 class PlannerScreen extends StatefulWidget {
   static const routeName = '/planner';
+
   const PlannerScreen({super.key});
 
   @override
@@ -18,14 +22,21 @@ class _PlannerScreenState extends State<PlannerScreen> {
   final int windowDays = 21; // +/- 10 days around today
   late int centerIndex;
   late int selectedDayIndex;
+  String? _avatarPath;
 
   @override
   void initState() {
     super.initState();
     centerIndex = windowDays ~/ 2;
     selectedDayIndex = centerIndex;
-  }
+      _loadAvatar();
 
+  }
+Future<void> _loadAvatar() async {
+  final prefs = await SharedPreferences.getInstance();
+  final path = prefs.getString('avatarPath');
+  if (mounted) setState(() => _avatarPath = path);
+}
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -64,7 +75,12 @@ class _PlannerScreenState extends State<PlannerScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.person),
+          icon:  _avatarPath != null
+          ? CircleAvatar(
+              radius: 14,
+              backgroundImage: FileImage(File(_avatarPath!)),
+            )
+          : const Icon(Icons.person),
           tooltip: 'Profile',
           onPressed: () => Navigator.pushNamed(context, '/profile'),
         ),
@@ -144,14 +160,13 @@ class _PlannerScreenState extends State<PlannerScreen> {
 
   Widget _buildDayContent(DateTime day, TaskProvider provider, ThemeData theme) {
     final tasks = provider.tasksForDate(day);
-
+    final sectionProvider = Provider.of<SectionProvider>(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: sections.map((section) {
+        children: sectionProvider.sections.map((section) {
           final sectionTasks = tasks.where((t) => t.section == section).toList();
-
           return Card(
             color: theme.cardColor,
             margin: const EdgeInsets.symmetric(vertical: 8),

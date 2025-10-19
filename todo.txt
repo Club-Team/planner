@@ -1,2 +1,5 @@
 Tasks:
- - 
+ - add icon to app
+ - show profile picture in home page when added
+ - show a bar chart of completed tasks per day
+ - user defined sections

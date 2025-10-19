@@ -10,12 +10,12 @@ import 'package:dayline_planner/screens/profile_screen.dart';
 import 'package:dayline_planner/screens/splash_screen.dart';
 import 'package:dayline_planner/services/db_service.dart';
 import 'package:dayline_planner/providers/theme_provider.dart';
-import 'package:dayline_planner/themes/light_theme.dart';
-import 'package:dayline_planner/themes/dark_theme.dart';
+import 'package:dayline_planner/providers/section_provider.dart';
+
 void main() async {
   // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize FFI bindings for desktop platforms
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     // Initialize FFI
@@ -23,11 +23,10 @@ void main() async {
     // Change the default factory
     databaseFactory = databaseFactoryFfi;
   }
-  
+
   await DBService.instance.init();
   runApp(const DaylineApp());
 }
-
 
 class DaylineApp extends StatelessWidget {
   const DaylineApp({super.key});
@@ -38,6 +37,7 @@ class DaylineApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => TaskProvider()..loadAll()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => SectionProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) => MaterialApp(
@@ -56,4 +56,4 @@ class DaylineApp extends StatelessWidget {
       ),
     );
   }
-  }
+}
