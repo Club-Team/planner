@@ -188,6 +188,15 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   onChanged: (val) => setState(
                       () => _recurrenceType = val ?? RecurrenceType.none),
                 ),
+                if (_recurrenceType == RecurrenceType.everyNDays) ...[
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    initialValue: '2',
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Every N days'),
+                    onChanged: (v) => _everyNDays = int.tryParse(v) ?? 2,
+                  ),
+                ],
                 if (_recurrenceType == RecurrenceType.specificWeekDays) ...[
                   const SizedBox(height: 10),
                   Wrap(
