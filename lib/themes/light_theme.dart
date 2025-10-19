@@ -51,13 +51,20 @@ class AppTheme {
         if (states.contains(MaterialState.pressed)) {
           return primaryColor.withOpacity(0.3); // Ripple when pressed (slightly stronger)
         }
-        return Colors.transparent;
+        return Color.fromRGBO(39, 39, 37, 1.0);
       }),
     ),
+    listTileTheme: ListTileThemeData(
+      textColor: Color.fromRGBO(39, 39, 37, 1.0), // title text color for all ListTiles & SwitchListTiles
+    ),
     inputDecorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(
+      filled: true,
+      fillColor: Color.fromRGBO(250, 246, 237, 1.0),
+      hintStyle: TextStyle(color: Colors.grey[400]),
+      labelStyle: TextStyle(color: Colors.grey[600]),
+      enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: primaryColor),
+        borderSide: BorderSide(color: Colors.transparent),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),

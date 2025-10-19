@@ -53,12 +53,18 @@ class DarkAppTheme {
         }
         return Colors.transparent;
       }),
-    )
-    ,
+    ),
+    listTileTheme: ListTileThemeData(
+      textColor: Colors.white70, // title text color for all ListTiles & SwitchListTiles
+    ),
     inputDecorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(
+      filled: true,
+      fillColor: const Color(0xFF1E1E1E),
+      hintStyle: TextStyle(color: Colors.grey[400]),
+      labelStyle: TextStyle(color: Colors.grey[600]),
+      enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: primaryColor),
+        borderSide: BorderSide(color: Colors.transparent),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),

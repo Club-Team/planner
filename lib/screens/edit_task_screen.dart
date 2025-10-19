@@ -187,7 +187,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                       .toList(),
                   onChanged: (val) => setState(
                       () => _recurrenceType = val ?? RecurrenceType.none),
-                  decoration: _inputDecoration('Recurrence type', theme),
                 ),
                 if (_recurrenceType == RecurrenceType.specificWeekDays) ...[
                   const SizedBox(height: 10),
@@ -251,6 +250,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       filled: base.filled,
       fillColor: base.fillColor,
       contentPadding: base.contentPadding,
+      alignLabelWithHint: true, // aligns label to top-left
     );
   }
 
@@ -262,7 +262,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
           text,
           style: textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
-            color: colorScheme.primary,
+            color: Theme.of(context).textTheme.bodyMedium?.color,
           ),
         ),
       );
