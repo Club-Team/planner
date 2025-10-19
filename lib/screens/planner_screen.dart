@@ -80,7 +80,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
         onPressed: () async {
           await Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const EditTaskScreen(task: null)),
+            MaterialPageRoute(builder: (_) => EditTaskScreen(task: null, initialDate: dateForIndex(selectedDayIndex))),
           );
         },
         child: const Icon(Icons.add),
@@ -182,7 +182,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (_) =>
-                                  const EditTaskScreen(task: null),
+                                  EditTaskScreen(task: null, initialDate: dateForIndex(selectedDayIndex)),
                             ),
                           );
                         },

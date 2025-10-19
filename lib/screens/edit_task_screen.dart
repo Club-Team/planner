@@ -6,8 +6,9 @@ import 'package:dayline_planner/providers/task_provider.dart';
 
 class EditTaskScreen extends StatefulWidget {
   final TaskModel? task; // null → create mode
+  final DateTime? initialDate; // 👈 add this
 
-  const EditTaskScreen({super.key, this.task});
+  const EditTaskScreen({super.key, this.task, this.initialDate});
 
   @override
   State<EditTaskScreen> createState() => _EditTaskScreenState();
@@ -34,7 +35,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     _recurrenceType = t?.recurrenceType ?? RecurrenceType.none;
     _everyNDays = t?.everyNDays ?? 1;
     _weekdays = List<int>.from(t?.weekdays ?? []);
-    _date = t?.date ?? DateTime.now();
+    _date = t?.date ?? widget.initialDate ?? DateTime.now();
   }
 
   Future<void> _pickDate() async {
