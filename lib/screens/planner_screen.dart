@@ -5,7 +5,7 @@ import 'package:dayline_planner/providers/task_provider.dart';
 import 'package:dayline_planner/models/task_model.dart';
 import 'package:dayline_planner/widgets/horizontal_dates.dart';
 import 'package:dayline_planner/widgets/task_tile.dart';
-import 'create_task_screen.dart';
+import 'edit_task_screen.dart';
 
 class PlannerScreen extends StatefulWidget {
   static const routeName = '/planner';
@@ -72,7 +72,9 @@ class _PlannerScreenState extends State<PlannerScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await Navigator.pushNamed(context, CreateTaskScreen.routeName);
+          await Navigator.push(context, MaterialPageRoute(
+                                          builder: (_) => EditTaskScreen(task: null),
+                                        ));
         },
         child: const Icon(Icons.add),
       ),
@@ -133,10 +135,11 @@ class _PlannerScreenState extends State<PlannerScreen> {
                                     icon: const Icon(Icons.add),
                                     color: Theme.of(context).colorScheme.primary,
                                     onPressed: () {
-                                      Navigator.pushNamed(
+                                      Navigator.push(
                                         context,
-                                        CreateTaskScreen.routeName,
-                                        arguments: {'defaultDate': day, 'defaultSection': s},
+                                        MaterialPageRoute(
+                                          builder: (_) => EditTaskScreen(task: null),
+                                        )
                                       );
                                     },
                                   )
