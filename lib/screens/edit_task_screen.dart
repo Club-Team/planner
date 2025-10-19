@@ -189,7 +189,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                       () => _recurrenceType = val ?? RecurrenceType.none),
                 ),
                 if (_recurrenceType == RecurrenceType.everyNDays) ...[
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 16),
                   TextFormField(
                     initialValue: '2',
                     keyboardType: TextInputType.number,
