@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:dayline_planner/providers/task_provider.dart';
 import 'package:dayline_planner/models/task_model.dart';
@@ -11,7 +12,6 @@ import 'package:dayline_planner/providers/section_provider.dart';
 
 class PlannerScreen extends StatefulWidget {
   static const routeName = '/planner';
-
   const PlannerScreen({super.key});
 
   @override
@@ -23,20 +23,36 @@ class _PlannerScreenState extends State<PlannerScreen> {
   late int centerIndex;
   late int selectedDayIndex;
   String? _avatarPath;
+  final ScrollController _scrollController = ScrollController();
+  bool _fabVisible = true;
 
   @override
   void initState() {
     super.initState();
     centerIndex = windowDays ~/ 2;
     selectedDayIndex = centerIndex;
-      _loadAvatar();
-
+    _loadAvatar();
+    _scrollController.addListener(() {
+      if (_scrollController.position.userScrollDirection == ScrollDirection.reverse) {
+        if (_fabVisible) setState(() => _fabVisible = false);
+      } else if (_scrollController.position.userScrollDirection == ScrollDirection.forward) {
+        if (!_fabVisible) setState(() => _fabVisible = true);
+      }
+    });
   }
-Future<void> _loadAvatar() async {
-  final prefs = await SharedPreferences.getInstance();
-  final path = prefs.getString('avatarPath');
-  if (mounted) setState(() => _avatarPath = path);
-}
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadAvatar() async {
+    final prefs = await SharedPreferences.getInstance();
+    final path = prefs.getString('avatarPath');
+    if (mounted) setState(() => _avatarPath = path);
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -92,14 +108,28 @@ Future<void> _loadAvatar() async {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => EditTaskScreen(task: null, initialDate: dateForIndex(selectedDayIndex))),
-          );
-        },
-        child: const Icon(Icons.add),
+      floatingActionButton: AnimatedSlide(
+        duration: const Duration(milliseconds: 250),
+        offset: _fabVisible ? Offset.zero : const Offset(2, 0),
+        curve: Curves.easeInOut,
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 250),
+          opacity: _fabVisible ? 1 : 0,
+          child: FloatingActionButton(
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => EditTaskScreen(
+                    task: null,
+                    initialDate: dateForIndex(selectedDayIndex),
+                  ),
+                ),
+              );
+            },
+            child: const Icon(Icons.add),
+          ),
+        ),
       ),
       body: Column(
         children: [
@@ -162,6 +192,7 @@ Future<void> _loadAvatar() async {
     final tasks = provider.tasksForDate(day);
     final sectionProvider = Provider.of<SectionProvider>(context);
     return SingleChildScrollView(
+      controller: _scrollController,
       padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
