@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
@@ -6,6 +7,7 @@ import 'package:dayline_planner/providers/task_provider.dart';
 import 'package:dayline_planner/models/task_model.dart';
 import 'package:dayline_planner/widgets/horizontal_dates.dart';
 import 'package:dayline_planner/widgets/task_tile.dart';
+import 'package:dayline_planner/widgets/bar_chart.dart';
 import 'package:dayline_planner/screens/edit_task_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dayline_planner/providers/section_provider.dart';
@@ -196,7 +198,8 @@ class _PlannerScreenState extends State<PlannerScreen> {
       padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: sectionProvider.sections.map((section) {
+        children: [
+          ... sectionProvider.sections.map((section) {
           final sectionTasks = tasks.where((t) => t.section == section).toList();
           return Card(
             color: theme.cardColor,
@@ -228,7 +231,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (_) =>
-                                  EditTaskScreen(task: null, initialDate: dateForIndex(selectedDayIndex)),
+                                  EditTaskScreen(task: null, initialDate: dateForIndex(selectedDayIndex), section: section),
                             ),
                           );
                         },
@@ -252,6 +255,19 @@ class _PlannerScreenState extends State<PlannerScreen> {
             ),
           );
         }).toList(),
+          SizedBox(
+            height: 220,
+            child: BarChart(
+              BarChartDataBuilder.build(
+                theme,
+                sectionProvider.sections.map((s) => [tasks.where((t) => t.section == s).length.toDouble(), tasks.where((t) => t.section == s && provider.isTaskCompletedOn(t, dateForIndex(selectedDayIndex))).length.toDouble()]).toList(),
+                labels: sectionProvider.sections,
+              ),
+              swapAnimationDuration: const Duration(milliseconds: 600),
+              swapAnimationCurve: Curves.easeOut,
+            ),
+          ),
+        ]
       ),
     );
   }

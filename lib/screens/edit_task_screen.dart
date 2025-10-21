@@ -1,3 +1,4 @@
+import 'package:dayline_planner/providers/section_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -7,8 +8,9 @@ import 'package:dayline_planner/providers/task_provider.dart';
 class EditTaskScreen extends StatefulWidget {
   final TaskModel? task; // null → create mode
   final DateTime? initialDate; // 👈 add this
+  final String? section;
 
-  const EditTaskScreen({super.key, this.task, this.initialDate});
+  const EditTaskScreen({super.key, this.task, this.initialDate, this.section});
 
   @override
   State<EditTaskScreen> createState() => _EditTaskScreenState();
@@ -24,11 +26,13 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   late int _everyNDays;
   late List<int> _weekdays;
   late DateTime _date;
+  late String _section;
 
   @override
   void initState() {
     super.initState();
     final t = widget.task;
+    _section = widget.task?.section ?? widget.section ?? Provider.of<SectionProvider>(context, listen: false).sections[0];
     _title = t?.title ?? '';
     _description = t?.description ?? '';
     _isRecurring = t?.isRecurring ?? false;
@@ -74,7 +78,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       id: widget.task?.id,
       title: _title.trim(),
       description: _description.trim(),
-      section: widget.task?.section ?? 'morning',
+      section: _section,
       isRecurring: _isRecurring,
       recurrenceType: _isRecurring ? _recurrenceType : RecurrenceType.none,
       everyNDays: _everyNDays,
@@ -152,7 +156,20 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                 decoration: _inputDecoration('Enter description', theme),
                 onChanged: (v) => _description = v,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
+              _buildLabel('Section', textTheme, colorScheme),
+              DropdownButtonFormField<String>(
+                value: _section,
+                items: [
+                  DropdownMenuItem(value: 'wake', child: Text('Wake (6-8)')),
+                  DropdownMenuItem(value: 'morning', child: Text('Morning (8-12)')),
+                  DropdownMenuItem(value: 'noon', child: Text('Noon (12-13)')),
+                  DropdownMenuItem(value: 'afternoon', child: Text('Afternoon (13-17)')),
+                  DropdownMenuItem(value: 'evening', child: Text('Evening (17-22)')),
+                ],
+                onChanged: (v) => setState(() => _section = v!)
+              ),
+              const SizedBox(height: 16),
               SwitchListTile(
                 title: const Text('Recurring task'),
                 value: _isRecurring,

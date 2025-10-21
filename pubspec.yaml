@@ -18,6 +18,7 @@ dependencies:
   image_picker: ^0.8.7+5
   intl: ^0.18.0
   file_picker: ^8.0.0
+  fl_chart: ^1.1.1
 
 
 dev_dependencies:
