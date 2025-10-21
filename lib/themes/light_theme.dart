@@ -51,7 +51,7 @@ class AppTheme {
         if (states.contains(MaterialState.pressed)) {
           return primaryColor.withOpacity(0.3); // Ripple when pressed (slightly stronger)
         }
-        return Color.fromRGBO(39, 39, 37, 1.0);
+        return Colors.transparent;
       }),
     ),
     listTileTheme: ListTileThemeData(
