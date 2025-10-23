@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:dayline_planner/models/task_model.dart';
 import 'package:dayline_planner/providers/task_provider.dart';
+import 'package:dayline_planner/utils/icon_helper.dart';
 
 class EditTaskScreen extends StatefulWidget {
   final TaskModel? task; // null → create mode
@@ -32,7 +33,9 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   void initState() {
     super.initState();
     final t = widget.task;
-    _section = widget.task?.section ?? widget.section ?? Provider.of<SectionProvider>(context, listen: false).sections[0];
+    _section = widget.task?.section ??
+        widget.section ??
+        Provider.of<SectionProvider>(context, listen: false).sections[0];
     _title = t?.title ?? '';
     _description = t?.description ?? '';
     _isRecurring = t?.isRecurring ?? false;
@@ -160,14 +163,30 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
               _buildLabel('Section', textTheme, colorScheme),
               DropdownButtonFormField<String>(
                 value: _section,
-                items: [
-                  DropdownMenuItem(value: 'wake', child: Text('Wake (6-8)')),
-                  DropdownMenuItem(value: 'morning', child: Text('Morning (8-12)')),
-                  DropdownMenuItem(value: 'noon', child: Text('Noon (12-13)')),
-                  DropdownMenuItem(value: 'afternoon', child: Text('Afternoon (13-17)')),
-                  DropdownMenuItem(value: 'evening', child: Text('Evening (17-22)')),
-                ],
-                onChanged: (v) => setState(() => _section = v!)
+                decoration: InputDecoration(labelText: 'Section'),
+                items: context.watch<SectionProvider>().fullSections.map((s) {
+                  final start = s.startTime.format(context);
+                  final end = s.endTime.format(context);
+                  return DropdownMenuItem<String>(
+                    value: s.id, // <- use id now
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(IconHelper.getIconData(
+                            s.iconName)), // map iconName to IconData
+                        const SizedBox(width: 8),
+                        Flexible(
+                          fit: FlexFit.loose,
+                          child: Text(
+                            '${s.title} ($start - $end)',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+                onChanged: (v) => setState(() => _section = v!),
               ),
               const SizedBox(height: 16),
               SwitchListTile(
@@ -210,7 +229,8 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   TextFormField(
                     initialValue: '2',
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Every N days'),
+                    decoration:
+                        const InputDecoration(labelText: 'Every N days'),
                     onChanged: (v) => _everyNDays = int.tryParse(v) ?? 2,
                   ),
                 ],

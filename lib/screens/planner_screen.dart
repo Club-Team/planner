@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dayline_planner/utils/icon_helper.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -35,9 +36,11 @@ class _PlannerScreenState extends State<PlannerScreen> {
     selectedDayIndex = centerIndex;
     _loadAvatar();
     _scrollController.addListener(() {
-      if (_scrollController.position.userScrollDirection == ScrollDirection.reverse) {
+      if (_scrollController.position.userScrollDirection ==
+          ScrollDirection.reverse) {
         if (_fabVisible) setState(() => _fabVisible = false);
-      } else if (_scrollController.position.userScrollDirection == ScrollDirection.forward) {
+      } else if (_scrollController.position.userScrollDirection ==
+          ScrollDirection.forward) {
         if (!_fabVisible) setState(() => _fabVisible = true);
       }
     });
@@ -66,23 +69,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
     return DateTime.now().add(Duration(days: offset));
   }
 
-  String labelForSection(String key) {
-    switch (key) {
-      case 'wake':
-        return 'Wake up (6–8)';
-      case 'morning':
-        return 'Morning (8–12)';
-      case 'noon':
-        return 'Noon (12–13)';
-      case 'afternoon':
-        return 'Afternoon (13–17)';
-      case 'evening':
-        return 'Evening (17–22)';
-      default:
-        return key;
-    }
-  }
-
   final sections = ['wake', 'morning', 'noon', 'afternoon', 'evening'];
 
   @override
@@ -93,12 +79,12 @@ class _PlannerScreenState extends State<PlannerScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon:  _avatarPath != null
-          ? CircleAvatar(
-              radius: 14,
-              backgroundImage: FileImage(File(_avatarPath!)),
-            )
-          : const Icon(Icons.person),
+          icon: _avatarPath != null
+              ? CircleAvatar(
+                  radius: 14,
+                  backgroundImage: FileImage(File(_avatarPath!)),
+                )
+              : const Icon(Icons.person),
           tooltip: 'Profile',
           onPressed: () => Navigator.pushNamed(context, '/profile'),
         ),
@@ -174,7 +160,8 @@ class _PlannerScreenState extends State<PlannerScreen> {
                   child: child,
                 ),
               ),
-              layoutBuilder: (currentChild, _) => currentChild ?? const SizedBox(),
+              layoutBuilder: (currentChild, _) =>
+                  currentChild ?? const SizedBox(),
               child: KeyedSubtree(
                 key: ValueKey<int>(selectedDayIndex),
                 child: _buildDayContent(
@@ -190,84 +177,105 @@ class _PlannerScreenState extends State<PlannerScreen> {
     );
   }
 
-  Widget _buildDayContent(DateTime day, TaskProvider provider, ThemeData theme) {
+  Widget _buildDayContent(
+      DateTime day, TaskProvider provider, ThemeData theme) {
     final tasks = provider.tasksForDate(day);
     final sectionProvider = Provider.of<SectionProvider>(context);
+
     return SingleChildScrollView(
       controller: _scrollController,
       padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ... sectionProvider.sections.map((section) {
-          final sectionTasks = tasks.where((t) => t.section == section).toList();
-          return Card(
-            color: theme.cardColor,
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            elevation: 2,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          labelForSection(section),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
+          ...sectionProvider.fullSections.map((section) {
+            final sectionTasks =
+                tasks.where((t) => t.section == section.id).toList();
+            final start = section.startTime.format(context);
+            final end = section.endTime.format(context);
+            return Card(
+              color: theme.cardColor,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          IconHelper.getIconData(section.iconName),
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '${section.title} ($start - $end)',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 17,
+                            ),
                           ),
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.add),
-                        color: theme.colorScheme.primary,
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  EditTaskScreen(task: null, initialDate: dateForIndex(selectedDayIndex), section: section),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  if (sectionTasks.isEmpty)
-                    Text(
-                      'No tasks',
-                      style: theme.textTheme.bodyMedium,
-                    )
-                  else
-                    Column(
-                      children: sectionTasks
-                          .map((t) => TaskTile(task: t, date: day))
-                          .toList(),
+                        IconButton(
+                          icon: const Icon(Icons.add),
+                          color: theme.colorScheme.primary,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => EditTaskScreen(
+                                  task: null,
+                                  initialDate: day,
+                                  section: section.id,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                ],
+                    const SizedBox(height: 6),
+                    if (sectionTasks.isEmpty)
+                      Text(
+                        'No tasks',
+                        style: theme.textTheme.bodyMedium,
+                      )
+                    else
+                      Column(
+                        children: sectionTasks
+                            .map((t) => TaskTile(task: t, date: day))
+                            .toList(),
+                      ),
+                  ],
+                ),
               ),
-            ),
-          );
-        }).toList(),
+            );
+          }).toList(),
           SizedBox(
             height: 220,
             child: BarChart(
               BarChartDataBuilder.build(
                 theme,
-                sectionProvider.sections.map((s) => [tasks.where((t) => t.section == s).length.toDouble(), tasks.where((t) => t.section == s && provider.isTaskCompletedOn(t, dateForIndex(selectedDayIndex))).length.toDouble()]).toList(),
-                labels: sectionProvider.sections,
+                sectionProvider.sortedSectionTitles.map((s) {
+                  final secTasks = tasks.where((t) => t.section == s).toList();
+                  final completedTasks = secTasks
+                      .where((t) => provider.isTaskCompletedOn(
+                          t, dateForIndex(selectedDayIndex)))
+                      .length
+                      .toDouble();
+                  return [secTasks.length.toDouble(), completedTasks];
+                }).toList(),
+                labels: sectionProvider.sortedSectionTitles,
               ),
               swapAnimationDuration: const Duration(milliseconds: 600),
               swapAnimationCurve: Curves.easeOut,
             ),
           ),
-        ]
+        ],
       ),
     );
   }

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 class Section {
-  final String id;
+  String id;
   String title;
   TimeOfDay startTime;
   TimeOfDay endTime;
+  String iconName; // <- new field
   bool isDeleted;
 
   Section({
@@ -12,26 +13,30 @@ class Section {
     required this.title,
     required this.startTime,
     required this.endTime,
+    this.iconName = 'schedule', // default icon
     this.isDeleted = false,
   });
-
-  factory Section.fromJson(Map<String, dynamic> json) {
-    return Section(
-      id: json['id'],
-      title: json['title'],
-      startTime: _parseTime(json['start']),
-      endTime: _parseTime(json['end']),
-      isDeleted: json['isDeleted'] ?? false,
-    );
-  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'title': title,
-        'start': _formatTime(startTime),
-        'end': _formatTime(endTime),
+        'startHour': startTime.hour,
+        'startMinute': startTime.minute,
+        'endHour': endTime.hour,
+        'endMinute': endTime.minute,
+        'iconName': iconName,
         'isDeleted': isDeleted,
       };
+
+  factory Section.fromJson(Map<String, dynamic> json) => Section(
+        id: json['id'],
+        title: json['title'],
+        startTime:
+            TimeOfDay(hour: json['startHour'] ?? 0, minute: json['startMinute'] ?? 0),
+        endTime: TimeOfDay(hour: json['endHour'] ?? 0, minute: json['endMinute'] ?? 0),
+        iconName: json['iconName'] ?? 'schedule',
+        isDeleted: json['isDeleted'] ?? false,
+      );
 
   static TimeOfDay _parseTime(String t) {
     final parts = t.split(':');

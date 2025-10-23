@@ -1,22 +1,34 @@
 import 'dart:convert';
-import 'package:dayline_planner/models/section_model.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
+import '../models/section_model.dart';
 
 class SectionProvider extends ChangeNotifier {
-  final _uuid = Uuid();
+  final _uuid = const Uuid();
   List<Section> _sections = [];
 
   /// Temporary backward-compatible getter
+
   List<String> get sections =>
       _sections.where((s) => !s.isDeleted).map((s) => s.title).toList();
 
   /// Access full objects if needed
-  List<Section> get fullSections => _sections;
+  List<String> get sortedSectionTitles {
+    return fullSections.map((s) => s.title).toList();
+  }
 
   SectionProvider() {
     loadSections();
+  }
+  List<Section> get fullSections {
+    final activeSections = _sections.where((s) => !s.isDeleted).toList();
+    activeSections.sort((a, b) {
+      final aMinutes = a.startTime.hour * 60 + a.startTime.minute;
+      final bMinutes = b.startTime.hour * 60 + b.startTime.minute;
+      return aMinutes.compareTo(bMinutes);
+    });
+    return activeSections;
   }
 
   Future<void> loadSections() async {
@@ -31,41 +43,42 @@ class SectionProvider extends ChangeNotifier {
             id: _uuid.v4(),
             title: 'Wake',
             startTime: const TimeOfDay(hour: 6, minute: 0),
-            endTime: const TimeOfDay(hour: 8, minute: 0)),
+            endTime: const TimeOfDay(hour: 8, minute: 0),
+            iconName: 'wb_sunny'),
         Section(
             id: _uuid.v4(),
             title: 'Morning',
             startTime: const TimeOfDay(hour: 8, minute: 0),
-            endTime: const TimeOfDay(hour: 12, minute: 0)),
+            endTime: const TimeOfDay(hour: 12, minute: 0),
+            iconName: 'coffee'),
         Section(
             id: _uuid.v4(),
             title: 'Noon',
             startTime: const TimeOfDay(hour: 12, minute: 0),
-            endTime: const TimeOfDay(hour: 13, minute: 0)),
+            endTime: const TimeOfDay(hour: 14, minute: 0),
+            iconName: 'lunch_dining'),
         Section(
             id: _uuid.v4(),
             title: 'Afternoon',
-            startTime: const TimeOfDay(hour: 13, minute: 0),
-            endTime: const TimeOfDay(hour: 17, minute: 0)),
+            startTime: const TimeOfDay(hour: 14, minute: 0),
+            endTime: const TimeOfDay(hour: 18, minute: 0),
+            iconName: 'work'),
         Section(
             id: _uuid.v4(),
             title: 'Evening',
-            startTime: const TimeOfDay(hour: 17, minute: 0),
-            endTime: const TimeOfDay(hour: 21, minute: 0)),
-        Section(
-            id: _uuid.v4(),
-            title: 'Night',
-            startTime: const TimeOfDay(hour: 21, minute: 0),
-            endTime: const TimeOfDay(hour: 22, minute: 0)),
+            startTime: const TimeOfDay(hour: 18, minute: 0),
+            endTime: const TimeOfDay(hour: 22, minute: 0),
+            iconName: 'nightlight_round'),
       ];
+      await _save(); // persist defaults
     }
     notifyListeners();
   }
 
   Future<void> _save() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString(
-        'userSectionsV2', jsonEncode(_sections.map((s) => s.toJson()).toList()));
+    prefs.setString('userSectionsV2',
+        jsonEncode(_sections.map((s) => s.toJson()).toList()));
   }
 
   bool _isOverlapping(TimeOfDay start, TimeOfDay end, [String? excludeId]) {
@@ -81,16 +94,17 @@ class SectionProvider extends ChangeNotifier {
   }
 
   Future<String?> addSection(
-      String title, TimeOfDay start, TimeOfDay end) async {
-    if (_isOverlapping(start, end)) {
-      return 'Time overlaps with another section';
-    }
+      String title, TimeOfDay start, TimeOfDay end, String iconName) async {
+    // if (_isOverlapping(start, end)) {
+    //   return 'Time overlaps with another section';
+    // }
 
     final newSec = Section(
       id: _uuid.v4(),
       title: title,
       startTime: start,
       endTime: end,
+      iconName: iconName,
     );
     _sections.add(newSec);
     await _save();
@@ -98,8 +112,8 @@ class SectionProvider extends ChangeNotifier {
     return null;
   }
 
-  Future<String?> updateSection(
-      Section sec, String newTitle, TimeOfDay start, TimeOfDay end) async {
+  Future<String?> updateSection(Section sec, String newTitle, TimeOfDay start,
+      TimeOfDay end, String iconName) async {
     if (_isOverlapping(start, end, sec.id)) {
       return 'Time overlaps with another section';
     }
@@ -107,6 +121,7 @@ class SectionProvider extends ChangeNotifier {
     sec.title = newTitle;
     sec.startTime = start;
     sec.endTime = end;
+    sec.iconName = iconName;
     await _save();
     notifyListeners();
     return null;
@@ -114,7 +129,7 @@ class SectionProvider extends ChangeNotifier {
 
   Future<void> removeSection(String id) async {
     final sec = _sections.firstWhere((s) => s.id == id);
-    sec.isDeleted = true; // soft delete
+    sec.isDeleted = true;
     await _save();
     notifyListeners();
   }
