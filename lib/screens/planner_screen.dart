@@ -260,19 +260,20 @@ class _PlannerScreenState extends State<PlannerScreen> {
             child: BarChart(
               BarChartDataBuilder.build(
                 theme,
-                sectionProvider.sortedSectionTitles.map((s) {
-                  final secTasks = tasks.where((t) => t.section == s).toList();
-                  final completedTasks = secTasks
-                      .where((t) => provider.isTaskCompletedOn(
-                          t, dateForIndex(selectedDayIndex)))
+                sectionProvider.fullSections.map((s) {
+                  final total =
+                      tasks.where((t) => t.section == s.id).length.toDouble();
+                  final completed = tasks
+                      .where((t) =>
+                          t.section == s.id &&
+                          provider.isTaskCompletedOn(
+                              t, dateForIndex(selectedDayIndex)))
                       .length
                       .toDouble();
-                  return [secTasks.length.toDouble(), completedTasks];
+                  return [total, completed];
                 }).toList(),
-                labels: sectionProvider.sortedSectionTitles,
+                sections: sectionProvider.fullSections,
               ),
-              swapAnimationDuration: const Duration(milliseconds: 600),
-              swapAnimationCurve: Curves.easeOut,
             ),
           ),
         ],
