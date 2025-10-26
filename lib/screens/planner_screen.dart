@@ -218,7 +218,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'You have no tasks scheduled for this day.\nTap the + button to add a new task.',
+                'You have no tasks scheduled for this day.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
