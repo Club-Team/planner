@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:dayline_planner/models/section_model.dart';
 import 'package:dayline_planner/utils/icon_helper.dart';
+import 'package:dayline_planner/widgets/pie_chart.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -181,6 +183,17 @@ class _PlannerScreenState extends State<PlannerScreen> {
       DateTime day, TaskProvider provider, ThemeData theme) {
     final tasks = provider.tasksForDate(day);
     final sectionProvider = Provider.of<SectionProvider>(context);
+    List<Section> tasksSections = sectionProvider.fullSections.where((s) => tasks.map((t) => t.section).toList().contains(s.id)).toList();
+    final today = DateTime.now();
+    final normalizedToday = DateTime(today.year, today.month, today.day);
+    final normalizedDay = DateTime(day.year, day.month, day.day);
+    List<Section> sections;
+
+    if (normalizedDay.isBefore(normalizedToday)) {
+      sections = tasksSections;
+    } else {
+      sections = sectionProvider.fullSections;
+    }
 
     return SingleChildScrollView(
       controller: _scrollController,
@@ -188,7 +201,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ...sectionProvider.fullSections.map((section) {
+          ...sections.map((section) {
             final sectionTasks =
                 tasks.where((t) => t.section == section.id).toList();
             final start = section.startTime.format(context);
@@ -220,22 +233,24 @@ class _PlannerScreenState extends State<PlannerScreen> {
                             ),
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.add),
-                          color: theme.colorScheme.primary,
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => EditTaskScreen(
-                                  task: null,
-                                  initialDate: day,
-                                  section: section.id,
+                        if (!normalizedDay.isBefore(normalizedToday)) ...[
+                          IconButton(
+                            icon: const Icon(Icons.add),
+                            color: theme.colorScheme.primary,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => EditTaskScreen(
+                                    task: null,
+                                    initialDate: day,
+                                    section: section.id,
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
+                              );
+                            },
+                          ),
+                        ]
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -257,12 +272,29 @@ class _PlannerScreenState extends State<PlannerScreen> {
           }).toList(),
           SizedBox(
             height: 220,
-            child: BarChart(
-              BarChartDataBuilder.build(
-                theme,
-                sectionProvider.fullSections.map((s) {
+            child: !normalizedDay.isBefore(normalizedToday)
+              ?BarChart(
+                BarChartDataBuilder.build(
+                  theme,
+                  sections.map((s) {
+                    final total =
+                        tasks.where((t) => t.section == s.id).length.toDouble();
+                    final completed = tasks
+                        .where((t) =>
+                            t.section == s.id &&
+                            provider.isTaskCompletedOn(
+                                t, dateForIndex(selectedDayIndex)))
+                        .length
+                        .toDouble();
+                    return [total, completed];
+                  }).toList(),
+                  sections: sections,
+                ),
+              )
+              : Center(child: CustomPieChart(
+                data: sections.map((s) {
                   final total =
-                      tasks.where((t) => t.section == s.id).length.toDouble();
+                        tasks.where((t) => t.section == s.id).length.toDouble();
                   final completed = tasks
                       .where((t) =>
                           t.section == s.id &&
@@ -270,11 +302,13 @@ class _PlannerScreenState extends State<PlannerScreen> {
                               t, dateForIndex(selectedDayIndex)))
                       .length
                       .toDouble();
-                  return [total, completed];
+                  return PieChartDataItem(
+                    value: ((completed / total) * 100).round().toDouble(),
+                    theme: theme,
+                    icon: IconHelper.getIconData(s.iconName)
+                  );
                 }).toList(),
-                sections: sectionProvider.fullSections,
-              ),
-            ),
+              ))
           ),
         ],
       ),
