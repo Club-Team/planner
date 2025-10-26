@@ -195,6 +195,43 @@ class _PlannerScreenState extends State<PlannerScreen> {
       sections = sectionProvider.fullSections;
     }
 
+    if (sections.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.inbox_outlined,
+                size: 80,
+                color: theme.colorScheme.primary.withOpacity(0.3),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'No Tasks Found',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onBackground,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'You have no tasks scheduled for this day.\nTap the + button to add a new task.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: theme.colorScheme.onBackground.withOpacity(0.6),
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return SingleChildScrollView(
       controller: _scrollController,
       padding: const EdgeInsets.all(12),
