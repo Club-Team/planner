@@ -34,7 +34,7 @@ class _CustomPieChartState extends State<CustomPieChart> {
             },
           ),
           borderData: FlBorderData(show: false),
-          sectionsSpace: 0,
+          sectionsSpace: 1,
           centerSpaceRadius: 0,
           sections: _buildSections(),
         ),
