@@ -49,7 +49,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     final picked = await showDatePicker(
       context: context,
       initialDate: _date,
-      firstDate: DateTime(2020),
+      firstDate: DateTime.now(),
       lastDate: DateTime(2100),
       builder: (context, child) {
         // make date picker also follow theme
