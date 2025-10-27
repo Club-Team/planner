@@ -7,11 +7,13 @@ import 'package:dayline_planner/screens/edit_task_screen.dart';
 class TaskTile extends StatelessWidget {
   final TaskModel task;
   final DateTime date;
+  final bool readOnly;
 
   const TaskTile({
     super.key,
     required this.task,
     required this.date,
+    this.readOnly = false,
   });
 
   @override
@@ -51,6 +53,7 @@ class TaskTile extends StatelessWidget {
             ),
       trailing: GestureDetector(
         onTap: () {
+          if (readOnly) return;
           provider.markCompleted(task, date, !done);
         },
         child: AnimatedContainer(

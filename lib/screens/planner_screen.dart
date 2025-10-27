@@ -183,17 +183,19 @@ class _PlannerScreenState extends State<PlannerScreen> {
       DateTime day, TaskProvider provider, ThemeData theme) {
     final tasks = provider.tasksForDate(day);
     final sectionProvider = Provider.of<SectionProvider>(context);
-    List<Section> tasksSections = sectionProvider.fullSections.where((s) => tasks.map((t) => t.section).toList().contains(s.id)).toList();
+    List<Section> tasksSections = sectionProvider.fullSections
+        .where((s) => tasks.map((t) => t.section).toList().contains(s.id))
+        .toList();
+
     final today = DateTime.now();
     final normalizedToday = DateTime(today.year, today.month, today.day);
     final normalizedDay = DateTime(day.year, day.month, day.day);
-    List<Section> sections;
 
-    if (normalizedDay.isBefore(normalizedToday)) {
-      sections = tasksSections;
-    } else {
-      sections = sectionProvider.fullSections;
-    }
+    // ✅ Determine read-only mode for past days
+    final isReadOnly = normalizedDay.isBefore(normalizedToday);
+
+    // ✅ Show only sections with tasks for past days
+    final sections = isReadOnly ? tasksSections : sectionProvider.fullSections;
 
     if (sections.isEmpty) {
       return Center(
@@ -241,65 +243,164 @@ class _PlannerScreenState extends State<PlannerScreen> {
           ...sections.map((section) {
             final sectionTasks =
                 tasks.where((t) => t.section == section.id).toList();
+            final completedCount = sectionTasks
+                .where((t) => provider.isTaskCompletedOn(t, day))
+                .length;
+            final progress = sectionTasks.isEmpty
+                ? 0.0
+                : completedCount / sectionTasks.length;
             final start = section.startTime.format(context);
             final end = section.endTime.format(context);
-            return Card(
-              color: theme.cardColor,
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                color: theme.cardColor,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Icon(
-                          IconHelper.getIconData(section.iconName),
-                          color: theme.colorScheme.primary,
+                    // === Header ===
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withOpacity(0.1),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16),
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            '${section.title} ($start - $end)',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 17,
-                            ),
-                          ),
-                        ),
-                        if (!normalizedDay.isBefore(normalizedToday)) ...[
-                          IconButton(
-                            icon: const Icon(Icons.add),
-                            color: theme.colorScheme.primary,
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => EditTaskScreen(
-                                    task: null,
-                                    initialDate: day,
-                                    section: section.id,
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              // Icon
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primary
+                                      .withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  IconHelper.getIconData(section.iconName),
+                                  color: theme.colorScheme.primary,
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+
+                              // Title + Time
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      section.title,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: theme.colorScheme.onBackground,
+                                      ),
+                                    ),
+                                    Text(
+                                      '$start - $end',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: theme.colorScheme.onBackground
+                                            .withOpacity(0.6),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // Completed count chip
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primary
+                                      .withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  '$completedCount/${sectionTasks.length}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.colorScheme.primary,
+                                    fontSize: 14,
                                   ),
                                 ),
-                              );
-                            },
+                              ),
+
+                              // “+” button (only for non-readonly)
+                              if (!normalizedDay.isBefore(normalizedToday))
+                                IconButton(
+                                  icon: const Icon(Icons.add),
+                                  color: theme.colorScheme.primary,
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => EditTaskScreen(
+                                          task: null,
+                                          initialDate: day,
+                                          section: section.id,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                            ],
                           ),
-                        ]
-                      ],
+
+                          // === Progress bar ===
+                          const SizedBox(height: 12),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: TweenAnimationBuilder<double>(
+                              tween: Tween<double>(begin: 0, end: progress),
+                              duration: const Duration(milliseconds: 400),
+                              curve: Curves.easeOutCubic,
+                              builder: (context, animatedValue, _) {
+                                return LinearProgressIndicator(
+                                  value: animatedValue.clamp(0.0, 1.0),
+                                  minHeight: 8,
+                                  backgroundColor: theme
+                                      .colorScheme.onBackground
+                                      .withOpacity(0.1),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    theme.colorScheme.primary,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 6),
+
+                    // === Tasks list ===
                     if (sectionTasks.isEmpty)
-                      Text(
-                        'No tasks',
-                        style: theme.textTheme.bodyMedium,
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          'No tasks',
+                          style: theme.textTheme.bodyMedium,
+                        ),
                       )
                     else
                       Column(
                         children: sectionTasks
-                            .map((t) => TaskTile(task: t, date: day))
+                            .map((t) => TaskTile(
+                                  task: t,
+                                  date: day,
+                                  readOnly:
+                                      normalizedDay.isBefore(normalizedToday),
+                                ))
                             .toList(),
                       ),
                   ],
@@ -307,46 +408,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
               ),
             );
           }).toList(),
-          SizedBox(
-            height: 220,
-            child: !normalizedDay.isBefore(normalizedToday)
-              ?BarChart(
-                BarChartDataBuilder.build(
-                  theme,
-                  sections.map((s) {
-                    final total =
-                        tasks.where((t) => t.section == s.id).length.toDouble();
-                    final completed = tasks
-                        .where((t) =>
-                            t.section == s.id &&
-                            provider.isTaskCompletedOn(
-                                t, dateForIndex(selectedDayIndex)))
-                        .length
-                        .toDouble();
-                    return [total, completed];
-                  }).toList(),
-                  sections: sections,
-                ),
-              )
-              : Center(child: CustomPieChart(
-                data: sections.map((s) {
-                  final total =
-                        tasks.where((t) => t.section == s.id).length.toDouble();
-                  final completed = tasks
-                      .where((t) =>
-                          t.section == s.id &&
-                          provider.isTaskCompletedOn(
-                              t, dateForIndex(selectedDayIndex)))
-                      .length
-                      .toDouble();
-                  return PieChartDataItem(
-                    value: ((completed / total) * 100).round().toDouble(),
-                    theme: theme,
-                    icon: IconHelper.getIconData(s.iconName)
-                  );
-                }).toList(),
-              ))
-          ),
         ],
       ),
     );
