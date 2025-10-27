@@ -1,5 +1,6 @@
 import 'package:dayline_planner/providers/section_provider.dart';
 import 'package:dayline_planner/providers/task_provider.dart';
+import 'package:dayline_planner/widgets/pie_chart.dart';
 import 'package:dayline_planner/widgets/section_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -64,7 +65,7 @@ class DayContent extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: sections.map((section) {
+        children: [...sections.map((section) {
           final sectionTasks = tasks.where((t) => t.section == section.id).toList();
           return SectionCard(
             section: section,
@@ -72,7 +73,15 @@ class DayContent extends StatelessWidget {
             isReadOnly: isReadOnly,
             date: date,
           );
-        }).toList(),
+        }),
+        if (normalizedDay.isBefore(normalizedToday))
+          SizedBox(
+            height: 220,
+            child: Center(
+              child: CustomPieChart(date: date),
+            ),
+          ),
+        ]
       ),
     );
   }

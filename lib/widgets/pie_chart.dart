@@ -1,11 +1,18 @@
 import 'package:dayline_planner/models/section_model.dart';
+import 'package:dayline_planner/providers/section_provider.dart';
+import 'package:dayline_planner/providers/task_provider.dart';
+import 'package:dayline_planner/utils/icon_helper.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CustomPieChart extends StatefulWidget {
-  final List<PieChartDataItem> data;
+  final DateTime date;
 
-  const CustomPieChart({super.key, required this.data});
+  const CustomPieChart({
+    required this.date,
+    super.key
+  });
 
   @override
   State<StatefulWidget> createState() => _CustomPieChartState();
@@ -43,45 +50,51 @@ class _CustomPieChartState extends State<CustomPieChart> {
   }
 
   List<PieChartSectionData> _buildSections() {
-    return List.generate(widget.data.length, (i) {
-      final item = widget.data[i];
+    final provider = Provider.of<TaskProvider>(context);
+    final tasks = provider.tasksForDate(widget.date);
+    final sectionProvider = Provider.of<SectionProvider>(context);
+    final sections = sectionProvider.fullSections
+            .where((s) => tasks.map((t) => t.section).contains(s.id))
+            .toList();
+    final data = sections.map((s) {
+                  final total =
+                        tasks.where((t) => t.section == s.id).length.toDouble();
+                  final completed = tasks
+                      .where((t) =>
+                          t.section == s.id &&
+                          provider.isTaskCompletedOn(
+                              t, widget.date))
+                      .length
+                      .toDouble();
+                  return ((completed / total) * 100).round().toDouble();;
+                }).toList();
+
+    return List.generate(sections.length, (i) {
       final isTouched = i == touchedIndex;
       final fontSize = isTouched ? 16.0 : 12.0;
       final radius = isTouched ? 110.0 : 100.0;
       final widgetSize = isTouched ? 55.0 : 40.0;
 
       return PieChartSectionData(
-        color: item.theme.colorScheme.primary,
-        value: item.value,
-        title: '${item.value}%',
+        color: Theme.of(context).colorScheme.primary,
+        value: data[i],
+        title: '${data[i]}%',
         radius: radius,
         titleStyle: TextStyle(
           fontSize: fontSize,
           fontWeight: FontWeight.bold,
-          color: item.theme.cardColor,
+          color: Theme.of(context).cardColor,
         ),
         badgeWidget: _Badge(
-          backColor: item.theme.cardColor,
-          iconData: item.icon,
+          backColor: Theme.of(context).cardColor,
+          iconData: IconHelper.getIconData(sections[i].iconName),
           size: widgetSize,
-          iconColor: item.theme.colorScheme.primary,
+          iconColor: Theme.of(context).colorScheme.primary,
         ),
         badgePositionPercentageOffset: .98,
       );
     });
   }
-}
-
-class PieChartDataItem {
-  final double value;
-  final IconData icon;
-  final ThemeData theme;
-
-  PieChartDataItem({
-    required this.value,
-    required this.theme,
-    required this.icon
-  });
 }
 
 class _Badge extends StatelessWidget {
