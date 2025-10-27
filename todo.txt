@@ -1,9 +1,7 @@
 Version 1 Checklist:
 
- - show a bar chart of completed tasks per day
  - deleted sections appear as readonly in future
  - drag and drop tasks from disabled sections (not into)
- - for previous days hide sections with no tasks 
  - section size based on section duration 
  - vertical timeline for day
  - redesign add task screen
@@ -11,6 +9,8 @@ Version 1 Checklist:
 
 
 Version 1 Done:
+ + show a bar chart of completed tasks per day
+ + for previous days hide sections with no tasks 
  + redesign upcoming screen tasks
  + add icon to app
  + add little statistics to previous days

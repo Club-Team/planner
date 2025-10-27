@@ -7,6 +7,7 @@ class DarkAppTheme {
   static final Color accentColor = "#26C6DA".toColor();
 
   static final ThemeData darkTheme = ThemeData(
+    fontFamily: 'Rubik',
     brightness: Brightness.dark,
     primaryColor: primaryColor,
     scaffoldBackgroundColor: backgroundColor,

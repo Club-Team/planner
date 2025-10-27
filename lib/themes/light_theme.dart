@@ -8,6 +8,7 @@ class AppTheme {
 
   // Main theme
   static final ThemeData lightTheme = ThemeData(
+    fontFamily: 'Rubik',
     primaryColor: primaryColor,
     scaffoldBackgroundColor: backgroundColor,
     cardColor: Color.fromRGBO(250, 246, 237, 1.0),
