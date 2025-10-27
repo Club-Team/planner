@@ -1,5 +1,5 @@
 Version 1 Checklist:
- - add icon to app
+
  - show a bar chart of completed tasks per day
  - deleted sections appear as readonly in future
  - drag and drop tasks from disabled sections (not into)
@@ -7,11 +7,12 @@ Version 1 Checklist:
  - section size based on section duration 
  - vertical timeline for day
  - redesign add task screen
- - redesign upcoming screen tasks
  - try new font
 
 
 Version 1 Done:
+ + redesign upcoming screen tasks
+ + add icon to app
  + add little statistics to previous days
  + user defined sections + validations and section overlaps
  + soft delete sections from database
