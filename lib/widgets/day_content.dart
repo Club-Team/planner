@@ -1,6 +1,7 @@
 import 'package:dayline_planner/providers/section_provider.dart';
 import 'package:dayline_planner/providers/task_provider.dart';
 import 'package:dayline_planner/widgets/pie_chart.dart';
+import 'package:dayline_planner/widgets/planner_timeline.dart';
 import 'package:dayline_planner/widgets/section_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -60,28 +61,55 @@ class DayContent extends StatelessWidget {
       );
     }
 
-    return SingleChildScrollView(
-      controller: scrollController, 
+    final isToday = normalizedDay == normalizedToday;
+
+    return Padding(
       padding: const EdgeInsets.all(12),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [...sections.map((section) {
-          final sectionTasks = tasks.where((t) => t.section == section.id).toList();
-          return SectionCard(
-            section: section,
-            tasks: sectionTasks,
-            isReadOnly: isReadOnly,
-            date: date,
-          );
-        }),
-        if (normalizedDay.isBefore(normalizedToday))
-          SizedBox(
-            height: 220,
-            child: Center(
-              child: CustomPieChart(date: date),
+        children: [
+          if (isToday) ...[
+            // Independent scroll for the timeline
+            SizedBox(
+              width: 80,
+              child: ScrollConfiguration(
+                behavior: const ScrollBehavior().copyWith(overscroll: false),
+                child: SingleChildScrollView(
+                  child: PlannerTimeline(hourHeight: 36),
+                ),
+              ),
+            ),
+            const SizedBox(width: 2),
+          ],
+          // Independent scroll for the sections/content
+          Expanded(
+            child: SingleChildScrollView(
+              controller: scrollController,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ...sections.map((section) {
+                    final sectionTasks =
+                        tasks.where((t) => t.section == section.id).toList();
+                    return SectionCard(
+                      section: section,
+                      tasks: sectionTasks,
+                      isReadOnly: isReadOnly,
+                      date: date,
+                    );
+                  }),
+                  if (normalizedDay.isBefore(normalizedToday))
+                    SizedBox(
+                      height: 220,
+                      child: Center(
+                        child: CustomPieChart(date: date),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
-        ]
+        ],
       ),
     );
   }
