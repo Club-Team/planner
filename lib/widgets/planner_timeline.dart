@@ -209,11 +209,11 @@ class PlannerTimeline extends StatelessWidget {
                                                 .colorScheme
                                                 .onBackground
                                                 .withOpacity(0.6),
-                                    fontSize: isCurrentHour ? 10 : 8,
+                                    fontSize: isCurrentHour ? 9 : 8,
                                     fontWeight: isCurrentHour
                                         ? FontWeight.w600
                                         : FontWeight.w400,
-                                    letterSpacing: 0.5,
+                                    letterSpacing: 0.2,
                                   ),
                             )),
                 ),
