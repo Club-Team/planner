@@ -53,7 +53,8 @@ class _HorizontalDatesState extends State<HorizontalDates> {
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
         offset.clamp(0, _scrollController.position.maxScrollExtent),
-        duration: const Duration(milliseconds: 300), // how long the scroll takes
+        duration:
+            const Duration(milliseconds: 300), // how long the scroll takes
         curve: Curves.easeInOut, // how the motion feels
       );
     }
@@ -77,15 +78,12 @@ class _HorizontalDatesState extends State<HorizontalDates> {
               DateFormat('yyyy-MM-dd').format(DateTime.now());
           final isSelected = widget.selectedIndex == idx;
 
-          final Color backgroundColor = isSelected
-              ? colorScheme.primary
-              : theme.cardColor;
+          final Color backgroundColor =
+              isSelected ? colorScheme.primary : theme.cardColor;
 
           final Color textColor = isSelected
               ? colorScheme.onPrimary
-              : (isToday
-                  ? colorScheme.primary
-                  : colorScheme.onSurface);
+              : (isToday ? colorScheme.primary : colorScheme.onSurface);
 
           final BoxBorder? border = (isToday && !isSelected)
               ? Border.all(color: colorScheme.primary, width: 2)

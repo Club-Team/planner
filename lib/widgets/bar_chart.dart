@@ -17,7 +17,8 @@ class BarChartDataBuilder {
     final textColor = theme.textTheme.bodySmall?.color ?? Colors.black87;
 
     final maxY = values.isNotEmpty
-        ? (values.expand((inner) => inner).reduce((a, b) => a > b ? a : b) * 1.2)
+        ? (values.expand((inner) => inner).reduce((a, b) => a > b ? a : b) *
+            1.2)
         : 0.0;
 
     return BarChartData(

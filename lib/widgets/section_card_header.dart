@@ -57,18 +57,20 @@ class SectionCardHeader extends StatelessWidget {
                   children: [
                     Text(section.title,
                         style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: theme.colorScheme.onBackground)),
                     Text('$start - $end',
                         style: TextStyle(
-                            fontSize: 13,
-                            color: theme.colorScheme.onBackground.withOpacity(0.6))),
+                            fontSize: 12,
+                            color: theme.colorScheme.onBackground
+                                .withOpacity(0.6))),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.primary.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
@@ -77,7 +79,7 @@ class SectionCardHeader extends StatelessWidget {
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: theme.colorScheme.primary,
-                        fontSize: 14)),
+                        fontSize: 12)),
               ),
               if (!isReadOnly)
                 IconButton(
@@ -105,8 +107,10 @@ class SectionCardHeader extends StatelessWidget {
               builder: (context, animatedValue, _) => LinearProgressIndicator(
                 value: animatedValue.clamp(0.0, 1.0),
                 minHeight: 8,
-                backgroundColor: theme.colorScheme.onBackground.withOpacity(0.1),
-                valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
+                backgroundColor:
+                    theme.colorScheme.onBackground.withOpacity(0.1),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
               ),
             ),
           ),

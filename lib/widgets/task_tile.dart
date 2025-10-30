@@ -24,9 +24,8 @@ class TaskTile extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final titleColor = done
-        ? theme.disabledColor
-        : textTheme.bodyLarge?.color ?? Colors.black;
+    final titleColor =
+        done ? theme.disabledColor : textTheme.bodyLarge?.color ?? Colors.black;
 
     final subtitleColor = done
         ? theme.disabledColor.withOpacity(0.7)
@@ -48,12 +47,13 @@ class TaskTile extends StatelessWidget {
           : Text(
               task.description!,
               style: textTheme.bodyMedium?.copyWith(
+                fontSize: 12,
                 color: subtitleColor,
               ),
             ),
       trailing: GestureDetector(
         onTap: () {
-          if (readOnly) return;
+          // if (readOnly) return;
           provider.markCompleted(task, date, !done);
         },
         child: AnimatedContainer(

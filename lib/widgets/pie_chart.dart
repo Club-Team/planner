@@ -9,10 +9,7 @@ import 'package:provider/provider.dart';
 class CustomPieChart extends StatefulWidget {
   final DateTime date;
 
-  const CustomPieChart({
-    required this.date,
-    super.key
-  });
+  const CustomPieChart({required this.date, super.key});
 
   @override
   State<StatefulWidget> createState() => _CustomPieChartState();
@@ -54,20 +51,18 @@ class _CustomPieChartState extends State<CustomPieChart> {
     final tasks = provider.tasksForDate(widget.date);
     final sectionProvider = Provider.of<SectionProvider>(context);
     final sections = sectionProvider.fullSections
-            .where((s) => tasks.map((t) => t.section).contains(s.id))
-            .toList();
+        .where((s) => tasks.map((t) => t.section).contains(s.id))
+        .toList();
     final data = sections.map((s) {
-                  final total =
-                        tasks.where((t) => t.section == s.id).length.toDouble();
-                  final completed = tasks
-                      .where((t) =>
-                          t.section == s.id &&
-                          provider.isTaskCompletedOn(
-                              t, widget.date))
-                      .length
-                      .toDouble();
-                  return ((completed / total) * 100).round().toDouble();;
-                }).toList();
+      final total = tasks.where((t) => t.section == s.id).length.toDouble();
+      final completed = tasks
+          .where((t) =>
+              t.section == s.id && provider.isTaskCompletedOn(t, widget.date))
+          .length
+          .toDouble();
+      return ((completed / total) * 100).round().toDouble();
+      ;
+    }).toList();
 
     return List.generate(sections.length, (i) {
       final isTouched = i == touchedIndex;

@@ -9,7 +9,10 @@ class EditSectionsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Manage Your Day Sections')),
+      appBar: AppBar(
+        title: const Text('Manage Your Day Sections'),
+        centerTitle: true,
+      ),
       body: const Padding(
         padding: EdgeInsets.all(12),
         child: _VerticalTimeline(),
@@ -71,71 +74,109 @@ class _VerticalTimelineState extends State<_VerticalTimeline> {
       ..sort((a, b) => (a.startTime.hour * 60 + a.startTime.minute)
           .compareTo(b.startTime.hour * 60 + b.startTime.minute));
 
+    final theme = Theme.of(context);
     return SingleChildScrollView(
       child: Column(
         children: sections.map((s) {
           final start = s.startTime.hour * 60 + s.startTime.minute;
           final end = s.endTime.hour * 60 + s.endTime.minute;
           final height = (end - start) / totalMinutes * 800;
-          return GestureDetector(
-            onTap: () => _showInlineEditor(context, s),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              height: height.clamp(90, 220),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(context).shadowColor.withOpacity(0.2),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  )
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          final color = theme.colorScheme.primary;
+          return Card(
+            clipBehavior: Clip.antiAlias,
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            child: InkWell(
+              onTap: () => _VerticalTimelineState.showEditor(context, section: s),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                height: height.clamp(90, 220),
+                decoration: BoxDecoration(
+                  // Use surface tint to avoid extra elevation while keeping M3 look
+                  color: theme.cardColor,
+                ),
+                child: Stack(
                   children: [
-                    Row(
-                      children: [
-                        Icon(
-                          _iconMap[s.iconName] ?? Icons.schedule,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            s.title,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                    // Left accent bar indicating the section
+                    Positioned(
+                      top: 0,
+                      bottom: 0,
+                      left: 0,
+                      child: Container(
+                        width: 6,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              color,
+                              color.withOpacity(0.65),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _format(s.startTime),
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        Text(
-                          _format(s.endTime),
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: color.withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.all(8),
+                                child: Icon(
+                                  _iconMap[s.iconName] ?? Icons.schedule,
+                                  size: 20,
+                                  color: color,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  s.title,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 16,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.play_arrow_rounded, size: 16),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    _format(s.startTime),
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  const Icon(Icons.stop_rounded, size: 16),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    _format(s.endTime),
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -147,12 +188,33 @@ class _VerticalTimelineState extends State<_VerticalTimeline> {
     );
   }
 
-  Future<void> _showInlineEditor(BuildContext context, Section s) async {
+  static Future<void> showEditor(BuildContext context, {Section? section}) async {
     final provider = context.read<SectionProvider>();
-    double start = (s.startTime.hour * 60 + s.startTime.minute).toDouble();
-    double end = (s.endTime.hour * 60 + s.endTime.minute).toDouble();
-    final titleCtrl = TextEditingController(text: s.title);
-    String selectedIcon = s.iconName;
+    // Initialize fields for create or edit
+    late double start;
+    late double end;
+    late TextEditingController titleCtrl;
+    late String selectedIcon;
+
+    if (section != null) {
+      start = (section.startTime.hour * 60 + section.startTime.minute).toDouble();
+      end = (section.endTime.hour * 60 + section.endTime.minute).toDouble();
+      titleCtrl = TextEditingController(text: section.title);
+      selectedIcon = section.iconName;
+    } else {
+      // Defaults for creating a new section: start at last section's end, span 2 hours
+      final existing = provider.fullSections.where((s) => !s.isDeleted);
+      TimeOfDay startTod = const TimeOfDay(hour: 0, minute: 0);
+      if (existing.isNotEmpty) {
+        final l = existing.last.endTime;
+        startTod = TimeOfDay(hour: l.hour, minute: l.minute);
+      }
+      start = (startTod.hour * 60 + startTod.minute) > 1439 ? 0 : (startTod.hour * 60 + startTod.minute).toDouble();
+      final endTod = TimeOfDay(hour: (startTod.hour + 2) % 24, minute: startTod.minute);
+      end = (endTod.hour * 60 + endTod.minute) > 1439 ? 1439 : (endTod.hour * 60 + endTod.minute).toDouble();
+      titleCtrl = TextEditingController(text: 'New Section');
+      selectedIcon = 'schedule';
+    }
 
     await showModalBottomSheet(
       context: context,
@@ -176,10 +238,40 @@ class _VerticalTimelineState extends State<_VerticalTimeline> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    TextField(
-                      controller: titleCtrl,
-                      decoration:
-                          const InputDecoration(labelText: 'Section name'),
+                    // drag handle
+                    Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withOpacity(0.4),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.all(8),
+                          child: Icon(
+                            _iconMap[selectedIcon] ?? Icons.schedule,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextField(
+                            controller: titleCtrl,
+                            decoration: const InputDecoration(
+                              labelText: 'Section name',
+                              hintText: 'e.g. Morning Routine',
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 20),
                     Row(
@@ -198,6 +290,10 @@ class _VerticalTimelineState extends State<_VerticalTimeline> {
                         end >= start ? end : start,
                       ),
                       activeColor: Theme.of(ctx).colorScheme.primary,
+                      labels: RangeLabels(
+                        _format(_toTime(start)),
+                        _format(_toTime(end)),
+                      ),
                       onChanged: (val) {
                         setModalState(() {
                           // ensure start <= end
@@ -226,15 +322,33 @@ class _VerticalTimelineState extends State<_VerticalTimeline> {
                               child: GestureDetector(
                                 onTap: () => setModalState(
                                     () => selectedIcon = iconName),
-                                child: CircleAvatar(
-                                  radius: 26,
-                                  backgroundColor: selected
-                                      ? Theme.of(context).colorScheme.primary
-                                      : Colors.grey.shade300,
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 180),
+                                  curve: Curves.easeOut,
+                                  width: 52,
+                                  height: 52,
+                                  decoration: BoxDecoration(
+                                    color: selected
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .primary
+                                            .withOpacity(0.18)
+                                        : Theme.of(context).cardColor,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: selected
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .primary
+                                          : Colors.grey.shade300,
+                                    ),
+                                  ),
                                   child: Icon(
                                     iconData,
                                     color: selected
-                                        ? Colors.white
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .primary
                                         : Colors.grey.shade800,
                                   ),
                                 ),
@@ -259,13 +373,23 @@ class _VerticalTimelineState extends State<_VerticalTimeline> {
                             onPressed: () async {
                               final startT = _toTime(start);
                               final endT = _toTime(end);
-                              final err = await provider.updateSection(
-                                s,
-                                titleCtrl.text.trim(),
-                                startT,
-                                endT,
-                                selectedIcon,
-                              );
+                              String? err;
+                              if (section == null) {
+                                err = await provider.addSection(
+                                  titleCtrl.text.trim(),
+                                  startT,
+                                  endT,
+                                  selectedIcon,
+                                );
+                              } else {
+                                err = await provider.updateSection(
+                                  section,
+                                  titleCtrl.text.trim(),
+                                  startT,
+                                  endT,
+                                  selectedIcon,
+                                );
+                              }
                               if (err != null && context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(content: Text(err)),
@@ -276,14 +400,15 @@ class _VerticalTimelineState extends State<_VerticalTimeline> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          tooltip: 'Delete section',
-                          onPressed: () async {
-                            await provider.removeSection(s.id);
-                            if (context.mounted) Navigator.pop(context);
-                          },
-                        ),
+                        if (section != null)
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            tooltip: 'Delete section',
+                            onPressed: () async {
+                              await provider.removeSection(section.id);
+                              if (context.mounted) Navigator.pop(context);
+                            },
+                          ),
                       ],
                     ),
                   ],
@@ -311,30 +436,10 @@ class _AddSectionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.read<SectionProvider>();
     return FloatingActionButton.extended(
       icon: const Icon(Icons.add),
       label: const Text('Add Section'),
-      onPressed: () async {
-        final existing = provider.fullSections.where((s) => !s.isDeleted);
-        TimeOfDay start = const TimeOfDay(hour: 0, minute: 0);
-        if (existing.isNotEmpty) {
-          final l = existing.last.endTime;
-          start = TimeOfDay(hour: l.hour, minute: l.minute);
-        }
-        final end =
-            TimeOfDay(hour: (start.hour + 2) % 24, minute: start.minute);
-        final err = await provider.addSection(
-          'New Section',
-          start,
-          end,
-          'schedule', // default icon
-        );
-        if (err != null && context.mounted) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(err)));
-        }
-      },
+      onPressed: () => _VerticalTimelineState.showEditor(context, section: null),
     );
   }
 }

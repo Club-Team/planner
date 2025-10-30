@@ -16,7 +16,8 @@ class TaskModel {
   RecurrenceType recurrenceType;
   int everyNDays; // used when recurrenceType == everyNDays
   List<int> weekdays; // 1..7 (Mon=1) used when specificWeekDays
-  DateTime date; // the base date for non-recurring tasks or start date for recurring
+  DateTime
+      date; // the base date for non-recurring tasks or start date for recurring
   DateTime createdAt;
 
   TaskModel({
@@ -59,7 +60,13 @@ class TaskModel {
       isRecurring: (m['isRecurring'] ?? 0) == 1,
       recurrenceType: RecurrenceType.values[(m['recurrenceType'] ?? 0) as int],
       everyNDays: (m['everyNDays'] ?? 1) as int,
-      weekdays: wk.isEmpty ? [] : wk.split(',').map((s) => int.tryParse(s) ?? 0).where((i) => i>0).toList(),
+      weekdays: wk.isEmpty
+          ? []
+          : wk
+              .split(',')
+              .map((s) => int.tryParse(s) ?? 0)
+              .where((i) => i > 0)
+              .toList(),
       date: DateTime.parse(m['date']),
       createdAt: DateTime.parse(m['createdAt']),
     );

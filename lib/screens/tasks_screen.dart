@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:dayline_planner/providers/task_provider.dart';
 import 'package:dayline_planner/providers/section_provider.dart';
-import 'package:dayline_planner/utils/icon_helper.dart';
 import 'package:dayline_planner/widgets/task_tile.dart';
+import 'package:dayline_planner/widgets/section_card_header.dart';
 
 class TasksScreen extends StatefulWidget {
   static const routeName = '/tasks';
@@ -14,7 +14,8 @@ class TasksScreen extends StatefulWidget {
   State<TasksScreen> createState() => _TasksScreenState();
 }
 
-class _TasksScreenState extends State<TasksScreen> with SingleTickerProviderStateMixin {
+class _TasksScreenState extends State<TasksScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final int _daysToShow = 3;
 
@@ -48,7 +49,8 @@ class _TasksScreenState extends State<TasksScreen> with SingleTickerProviderStat
     final sectionProvider = Provider.of<SectionProvider>(context);
     final theme = Theme.of(context);
     final today = DateTime.now();
-    final days = List.generate(_daysToShow, (i) => today.add(Duration(days: i)));
+    final days =
+        List.generate(_daysToShow, (i) => today.add(Duration(days: i)));
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -67,13 +69,17 @@ class _TasksScreenState extends State<TasksScreen> with SingleTickerProviderStat
             color: theme.appBarTheme.backgroundColor,
             child: TabBar(
               controller: _tabController,
-              isScrollable: true,
+              // Center the tabs by letting them expand evenly across the width
+              // Note: Older Flutter versions (Dart SDK 2.18 range) don't support TabAlignment.center.
+              // Disabling isScrollable ensures tabs are centered and evenly spaced.
+              isScrollable: false,
               indicatorColor: theme.colorScheme.primary,
               indicatorWeight: 3,
               // Remove the default bottom divider under the TabBar
               dividerColor: Colors.transparent,
               labelColor: theme.colorScheme.primary,
-              unselectedLabelColor: theme.colorScheme.onBackground.withOpacity(0.6),
+              unselectedLabelColor:
+                  theme.colorScheme.onBackground.withOpacity(0.6),
               labelStyle: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
@@ -109,7 +115,7 @@ class _TasksScreenState extends State<TasksScreen> with SingleTickerProviderStat
         children: days.map((day) {
           final tasks = provider.tasksForDate(day);
           final sections = sectionProvider.fullSections;
-          
+
           // Filter tasks to only include those in active (non-deleted) sections
           final activeSections = sections.where((s) => !s.isDeleted).toList();
           final activeTasks = tasks.where((task) {
@@ -192,7 +198,10 @@ class _TasksScreenState extends State<TasksScreen> with SingleTickerProviderStat
                       _buildStatItem(
                         icon: Icons.check_circle_outline,
                         label: 'Completed',
-                        value: activeTasks.where((t) => provider.isTaskCompletedOn(t, day)).length.toString(),
+                        value: activeTasks
+                            .where((t) => provider.isTaskCompletedOn(t, day))
+                            .length
+                            .toString(),
                         theme: theme,
                       ),
                       Container(
@@ -203,7 +212,10 @@ class _TasksScreenState extends State<TasksScreen> with SingleTickerProviderStat
                       _buildStatItem(
                         icon: Icons.pending_outlined,
                         label: 'Pending',
-                        value: activeTasks.where((t) => !provider.isTaskCompletedOn(t, day)).length.toString(),
+                        value: activeTasks
+                            .where((t) => !provider.isTaskCompletedOn(t, day))
+                            .length
+                            .toString(),
                         theme: theme,
                       ),
                     ],
@@ -216,9 +228,14 @@ class _TasksScreenState extends State<TasksScreen> with SingleTickerProviderStat
               ...activeSections.where((section) {
                 return activeTasks.any((task) => task.section == section.id);
               }).map((section) {
-                final sectionTasks = activeTasks.where((t) => t.section == section.id).toList();
-                final completedCount = sectionTasks.where((t) => provider.isTaskCompletedOn(t, day)).length;
-                final progress = sectionTasks.isEmpty ? 0.0 : completedCount / sectionTasks.length;
+                final sectionTasks =
+                    activeTasks.where((t) => t.section == section.id).toList();
+                final completedCount = sectionTasks
+                    .where((t) => provider.isTaskCompletedOn(t, day))
+                    .length;
+                final progress = sectionTasks.isEmpty
+                    ? 0.0
+                    : completedCount / sectionTasks.length;
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16),
@@ -230,93 +247,16 @@ class _TasksScreenState extends State<TasksScreen> with SingleTickerProviderStat
                     color: theme.cardColor,
                     child: Column(
                       children: [
-                        // Section header
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withOpacity(0.1),
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(16),
-                              topRight: Radius.circular(16),
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.primary.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Icon(
-                                      IconHelper.getIconData(section.iconName),
-                                      color: theme.colorScheme.primary,
-                                      size: 24,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          section.title,
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: theme.colorScheme.onBackground,
-                                          ),
-                                        ),
-                                        Text(
-                                          '${section.startTime.format(context)} - ${section.endTime.format(context)}',
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            color: theme.colorScheme.onBackground.withOpacity(0.6),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.primary.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Text(
-                                      '$completedCount/${sectionTasks.length}',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: theme.colorScheme.primary,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: TweenAnimationBuilder<double>(
-                                  tween: Tween<double>(begin: 0, end: progress),
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeOutCubic,
-                                  builder: (context, animatedValue, _) {
-                                    return LinearProgressIndicator(
-                                      value: animatedValue.clamp(0.0, 1.0),
-                                      minHeight: 8,
-                                      backgroundColor: theme.colorScheme.onBackground.withOpacity(0.1),
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        theme.colorScheme.primary,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
+                        // Section header (reused override widget)
+                        SectionCardHeader(
+                          section: section,
+                          progress: progress,
+                          start: section.startTime.format(context),
+                          end: section.endTime.format(context),
+                          completedCount: completedCount,
+                          totalTasks: sectionTasks.length,
+                          isReadOnly: true,
+                          date: day,
                         ),
                         // Tasks list (reuse shared TaskTile for consistency with Planner screen)
                         ...sectionTasks

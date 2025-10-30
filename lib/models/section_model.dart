@@ -31,9 +31,10 @@ class Section {
   factory Section.fromJson(Map<String, dynamic> json) => Section(
         id: json['id'],
         title: json['title'],
-        startTime:
-            TimeOfDay(hour: json['startHour'] ?? 0, minute: json['startMinute'] ?? 0),
-        endTime: TimeOfDay(hour: json['endHour'] ?? 0, minute: json['endMinute'] ?? 0),
+        startTime: TimeOfDay(
+            hour: json['startHour'] ?? 0, minute: json['startMinute'] ?? 0),
+        endTime: TimeOfDay(
+            hour: json['endHour'] ?? 0, minute: json['endMinute'] ?? 0),
         iconName: json['iconName'] ?? 'schedule',
         isDeleted: json['isDeleted'] ?? false,
       );

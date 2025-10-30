@@ -28,7 +28,13 @@ class _CreateTodoItemState extends State<CreateTodoItem> {
   ];
 
   final List<String> _weekdays = [
-    'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun'
   ];
 
   Future<void> _pickDate() async {
@@ -70,8 +76,9 @@ class _CreateTodoItemState extends State<CreateTodoItem> {
       'isRecurring': _isRecurring,
       'dueDate': !_isRecurring ? _dueDate.toIso8601String() : null,
       'recurrenceType': _isRecurring ? _recurrenceType : null,
-      'weekdays':
-          _isRecurring && _recurrenceType == 'Specific weekdays' ? _selectedWeekdays : [],
+      'weekdays': _isRecurring && _recurrenceType == 'Specific weekdays'
+          ? _selectedWeekdays
+          : [],
     };
 
     widget.onCreate?.call(todo);
@@ -124,7 +131,8 @@ class _CreateTodoItemState extends State<CreateTodoItem> {
               /// Title
               TextFormField(
                 decoration: inputDecoration.copyWith(labelText: 'Title'),
-                validator: (v) => v == null || v.isEmpty ? 'Enter a title' : null,
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'Enter a title' : null,
                 onChanged: (v) => _title = v,
               ),
               const SizedBox(height: 12),
@@ -210,8 +218,8 @@ class _CreateTodoItemState extends State<CreateTodoItem> {
                     backgroundColor: colorScheme.primary,
                     foregroundColor: colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    textStyle:
-                        textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
+                    textStyle: textTheme.labelLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   onPressed: _createTodo,
                 ),

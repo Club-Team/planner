@@ -22,9 +22,8 @@ class PlannerTimeline extends StatelessWidget {
     final now = DateTime.now();
     final currentHour = now.hour;
     final sections = Provider.of<SectionProvider>(context).fullSections;
-    
+
     return Container(
-      width: 70,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -58,140 +57,168 @@ class PlannerTimeline extends StatelessWidget {
               isInsideAnySection = true;
             }
           }
-          final bool hideIndicator = boundarySection == null && isInsideAnySection;
-          
+          final bool hideIndicator =
+              boundarySection == null && isInsideAnySection;
+
           return SizedBox(
-            height: hourHeight,
-            width: 70,
-            child: TimelineTile(
-              alignment: TimelineAlign.manual,
-              lineXY: 0.8,
-              isFirst: isFirst,
-              isLast: isLast,
-              beforeLineStyle: LineStyle(
-                color: isPastHour
-                    ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
-                    : Theme.of(context).dividerColor.withOpacity(0.25),
-                thickness: isPastHour ? 2.5 : 2,
-              ),
-              afterLineStyle: LineStyle(
-                color: isPastHour
-                    ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
-                    : Theme.of(context).dividerColor.withOpacity(0.25),
-                thickness: isPastHour ? 2.5 : 2,
-              ),
-              indicatorStyle: IndicatorStyle(
-                drawGap: !hideIndicator,
-                width: hideIndicator
-                    ? 5
-                    : isCurrentHour
-                        ? (boundarySection != null ? 20 : 12)
-                        : (boundarySection != null ? 18 : 10),
-                height: hideIndicator
-                    ? 5
-                    : isCurrentHour
-                        ? (boundarySection != null ? 20 : 12)
-                        : (boundarySection != null ? 18 : 10),
-                indicator: boundarySection != null
-                    ? Container(
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isCurrentHour
-                              ? Theme.of(context).colorScheme.primary.withOpacity(0.15)
-                              : Theme.of(context).colorScheme.surface.withOpacity(0.9),
-                          boxShadow: isCurrentHour
-                              ? [
-                                  BoxShadow(
-                                    color: Theme.of(context)
+              height: hourHeight,
+              child: TimelineTile(
+                alignment: TimelineAlign.manual,
+                lineXY: 0.8,
+                isFirst: isFirst,
+                isLast: isLast,
+                beforeLineStyle: LineStyle(
+                  color: isPastHour
+                      ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
+                      : Theme.of(context).dividerColor.withOpacity(0.25),
+                  thickness: isPastHour ? 2.5 : 2,
+                ),
+                afterLineStyle: LineStyle(
+                  color: isPastHour
+                      ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
+                      : Theme.of(context).dividerColor.withOpacity(0.25),
+                  thickness: isPastHour ? 2.5 : 2,
+                ),
+                indicatorStyle: IndicatorStyle(
+                  drawGap: !hideIndicator,
+                  width: hideIndicator
+                      ? 5
+                      : isCurrentHour
+                          ? (boundarySection != null ? 20 : 12)
+                          : (boundarySection != null ? 18 : 10),
+                  height: hideIndicator
+                      ? 5
+                      : isCurrentHour
+                          ? (boundarySection != null ? 20 : 12)
+                          : (boundarySection != null ? 18 : 10),
+                  indicator: boundarySection != null
+                      ? Container(
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isCurrentHour
+                                ? Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.15)
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .surface
+                                    .withOpacity(0.9),
+                            boxShadow: isCurrentHour
+                                ? [
+                                    BoxShadow(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary
+                                          .withOpacity(0.35),
+                                      blurRadius: 8,
+                                      spreadRadius: 1,
+                                    )
+                                  ]
+                                : null,
+                            border: Border.all(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withOpacity(0.6),
+                              width: 1,
+                            ),
+                          ),
+                          child: Icon(
+                            IconHelper.getIconData(boundarySection.iconName),
+                            size: isCurrentHour ? 14 : 12,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        )
+                      : Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: isCurrentHour
+                                ? LinearGradient(
+                                    colors: [
+                                      Theme.of(context).colorScheme.primary,
+                                      Theme.of(context).colorScheme.secondary,
+                                    ],
+                                  )
+                                : null,
+                            color: isCurrentHour
+                                ? null
+                                : isPastHour
+                                    ? Theme.of(context)
                                         .colorScheme
                                         .primary
-                                        .withOpacity(0.35),
-                                    blurRadius: 8,
-                                    spreadRadius: 1,
-                                  )
-                                ]
-                              : null,
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
-                            width: 1,
+                                        .withOpacity(0.6)
+                                    : Theme.of(context)
+                                        .dividerColor
+                                        .withOpacity(0.4),
+                            boxShadow: isCurrentHour
+                                ? [
+                                    BoxShadow(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary
+                                          .withOpacity(0.5),
+                                      blurRadius: 8,
+                                      spreadRadius: 2,
+                                    )
+                                  ]
+                                : null,
                           ),
                         ),
-                        child: Icon(
-                          IconHelper.getIconData(boundarySection.iconName),
-                          size: isCurrentHour ?14 : 12,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      )
-                    : Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: isCurrentHour
-                              ? LinearGradient(
-                                  colors: [
-                                    Theme.of(context).colorScheme.primary,
-                                    Theme.of(context).colorScheme.secondary,
-                                  ],
-                                )
-                              : null,
-                          color: isCurrentHour
-                              ? null
-                              : isPastHour
-                                  ? Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withOpacity(0.6)
-                                  : Theme.of(context).dividerColor.withOpacity(0.4),
-                          boxShadow: isCurrentHour
-                              ? [
-                                  BoxShadow(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primary
-                                        .withOpacity(0.5),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  )
-                                ]
-                              : null,
-                        ),
-                      ),
-              ),
-              startChild: Align(
+                ),
+                startChild: Align(
                   alignment: Alignment.centerRight,
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: boundarySection != null ? 3 : 2, vertical: 1),
-                    decoration: isCurrentHour
-                        ? BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Theme.of(context).colorScheme.primary.withOpacity(0.15),
-                                Theme.of(context).colorScheme.secondary.withOpacity(0.15),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(6),
-                          )
-                        : null,
-                    child: hideIndicator && !isCurrentHour
-                      ? null
-                      : Text(
-                      hour.toString().padLeft(2, '0') + ':00',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: isCurrentHour
-                                ? Theme.of(context).colorScheme.primary
-                                : isPastHour
-                                    ? Theme.of(context).colorScheme.onBackground.withOpacity(0.4)
-                                    : Theme.of(context).colorScheme.onBackground.withOpacity(0.6),
-                            fontSize: isCurrentHour ? 12 : 11,
-                            fontWeight: isCurrentHour ? FontWeight.w600 : FontWeight.w400,
-                            letterSpacing: 0.5,
-                          ),
-                    )
-                  ),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: boundarySection != null ? 3 : 2,
+                          vertical: 1),
+                      decoration: isCurrentHour
+                          ? BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withOpacity(0.15),
+                                  Theme.of(context)
+                                      .colorScheme
+                                      .secondary
+                                      .withOpacity(0.15),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(6),
+                            )
+                          : null,
+                      child: hideIndicator && !isCurrentHour
+                          ? null
+                          : Text(
+                              hour.toString().padLeft(2, '0') + ':00',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: isCurrentHour
+                                        ? Theme.of(context).colorScheme.primary
+                                        : isPastHour
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .onBackground
+                                                .withOpacity(0.4)
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .onBackground
+                                                .withOpacity(0.6),
+                                    fontSize: isCurrentHour ? 10 : 8,
+                                    fontWeight: isCurrentHour
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
+                                    letterSpacing: 0.5,
+                                  ),
+                            )),
                 ),
-              endChild: const SizedBox(width: 5),
-            )
-          );
+                endChild: const SizedBox(width: 5),
+              ));
         }),
       ),
     );

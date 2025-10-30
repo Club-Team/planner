@@ -41,7 +41,9 @@ class DayContent extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.inbox_outlined,
-                  size: 80, color: Theme.of(context).colorScheme.primary.withOpacity(0.3)),
+                  size: 80,
+                  color:
+                      Theme.of(context).colorScheme.primary.withOpacity(0.3)),
               const SizedBox(height: 24),
               Text('No Tasks Found',
                   style: TextStyle(
@@ -53,7 +55,10 @@ class DayContent extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       fontSize: 16,
-                      color: Theme.of(context).colorScheme.onBackground.withOpacity(0.6),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onBackground
+                          .withOpacity(0.6),
                       height: 1.5)),
             ],
           ),
@@ -71,7 +76,7 @@ class DayContent extends StatelessWidget {
           if (isToday) ...[
             // Independent scroll for the timeline
             SizedBox(
-              width: 80,
+              width: 60,
               child: ScrollConfiguration(
                 behavior: const ScrollBehavior().copyWith(overscroll: false),
                 child: SingleChildScrollView(

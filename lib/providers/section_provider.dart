@@ -11,7 +11,7 @@ class SectionProvider extends ChangeNotifier {
   /// Temporary backward-compatible getter
 
   List<String> get sections =>
-      _sections.where((s) => !s.isDeleted).map((s) => s.title).toList();
+      _sections.where((s) => !s.isDeleted).map((s) => s.id).toList();
 
   /// Access full objects if needed
   List<String> get sortedSectionTitles {
@@ -95,9 +95,9 @@ class SectionProvider extends ChangeNotifier {
 
   Future<String?> addSection(
       String title, TimeOfDay start, TimeOfDay end, String iconName) async {
-    // if (_isOverlapping(start, end)) {
-    //   return 'Time overlaps with another section';
-    // }
+    if (_isOverlapping(start, end)) {
+      return 'Time overlaps with another section';
+    }
 
     final newSec = Section(
       id: _uuid.v4(),

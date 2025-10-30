@@ -76,6 +76,13 @@ class _PlannerScreenState extends State<PlannerScreen> {
             onPressed: () => Navigator.pushNamed(context, '/tasks'),
           ),
         ],
+        title: Text(
+          'Dayline Planner',
+          style: TextStyle(
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       floatingActionButton: AnimatedSlide(
         duration: const Duration(milliseconds: 250),
@@ -88,7 +95,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
               context,
               MaterialPageRoute(
                 builder: (_) => EditTaskScreen(
-                    task: null, initialDate: dateForIndex(selectedDayIndex)),
+                    initialDate: dateForIndex(selectedDayIndex)),
               ),
             ),
             child: const Icon(Icons.add),
