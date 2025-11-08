@@ -34,15 +34,18 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     if (args != null) {
-      if (args['defaultDate'] != null) _selectedDate = args['defaultDate'] as DateTime;
-      if (args['defaultSection'] != null) _section = args['defaultSection'] as String;
+      if (args['defaultDate'] != null)
+        _selectedDate = args['defaultDate'] as DateTime;
+      if (args['defaultSection'] != null)
+        _section = args['defaultSection'] as String;
     }
   }
 
   Widget _weekdayRow() {
-    final labels = ['M','T','W','T','F','S','S'];
+    final labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
     return Wrap(
       spacing: 6,
       children: List.generate(7, (i) {
@@ -63,7 +66,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     if (!_formKey.currentState!.validate()) return;
     final weekdays = <int>[];
     for (var i = 0; i < 7; i++) {
-      if (_weekdaySelected[i]) weekdays.add(i+1); // Mon=1
+      if (_weekdaySelected[i]) weekdays.add(i + 1); // Mon=1
     }
     final t = TaskModel(
       title: _title.text.trim(),
@@ -95,7 +98,8 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
               TextFormField(
                 controller: _title,
                 decoration: const InputDecoration(labelText: 'Title'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Required' : null,
               ),
               TextFormField(
                 controller: _desc,
@@ -107,10 +111,13 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                 value: _section,
                 items: [
                   DropdownMenuItem(value: 'wake', child: Text('Wake (6-8)')),
-                  DropdownMenuItem(value: 'morning', child: Text('Morning (8-12)')),
+                  DropdownMenuItem(
+                      value: 'morning', child: Text('Morning (8-12)')),
                   DropdownMenuItem(value: 'noon', child: Text('Noon (12-13)')),
-                  DropdownMenuItem(value: 'afternoon', child: Text('Afternoon (13-17)')),
-                  DropdownMenuItem(value: 'evening', child: Text('Evening (17-22)')),
+                  DropdownMenuItem(
+                      value: 'afternoon', child: Text('Afternoon (13-17)')),
+                  DropdownMenuItem(
+                      value: 'evening', child: Text('Evening (17-22)')),
                 ],
                 onChanged: (v) => setState(() => _section = v!),
                 decoration: const InputDecoration(labelText: 'Section'),
@@ -123,9 +130,11 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
               if (_isRecurring) ...[
                 DropdownButtonFormField<RecurrenceType>(
                   value: _rType,
-                  decoration: const InputDecoration(labelText: 'Recurrence type'),
+                  decoration:
+                      const InputDecoration(labelText: 'Recurrence type'),
                   items: RecurrenceType.values.map((rt) {
-                    return DropdownMenuItem(value: rt, child: Text(rt.toString().split('.').last));
+                    return DropdownMenuItem(
+                        value: rt, child: Text(rt.toString().split('.').last));
                   }).toList(),
                   onChanged: (v) => setState(() {
                     _rType = v!;
@@ -135,7 +144,8 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                   TextFormField(
                     initialValue: '2',
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Every N days'),
+                    decoration:
+                        const InputDecoration(labelText: 'Every N days'),
                     onChanged: (v) => _everyNDays = int.tryParse(v) ?? 2,
                   ),
                 if (_rType == RecurrenceType.specificWeekDays)
@@ -163,7 +173,8 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                         firstDate: DateTime(2000),
                         lastDate: DateTime(2100),
                       );
-                      if (picked != null) setState(() => _selectedDate = picked);
+                      if (picked != null)
+                        setState(() => _selectedDate = picked);
                     },
                   ),
                 ),

@@ -1,13 +1,13 @@
+import 'dart:io';
+import 'package:dayline_planner/widgets/day_content.dart';
+import 'package:dayline_planner/widgets/day_selector.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
-import 'package:dayline_planner/providers/task_provider.dart';
-import 'package:dayline_planner/models/task_model.dart';
-import 'package:dayline_planner/widgets/horizontal_dates.dart';
-import 'package:dayline_planner/widgets/task_tile.dart';
-import 'create_task_screen.dart';
+import 'package:flutter/rendering.dart';
+import 'package:dayline_planner/screens/edit_task_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PlannerScreen extends StatefulWidget {
+  static const routeName = '/planner';
   const PlannerScreen({super.key});
 
   @override
@@ -15,137 +15,109 @@ class PlannerScreen extends StatefulWidget {
 }
 
 class _PlannerScreenState extends State<PlannerScreen> {
-  late PageController _pageController;
-  final int windowDays = 21; // show +/- 10 days
+  final int windowDays = 21;
   late int centerIndex;
-  DateTime baseDate = DateTime.now();
+  late int selectedDayIndex;
+  String? _avatarPath;
+  final ScrollController _scrollController = ScrollController();
+  bool _fabVisible = true;
+
+  Future<void> _loadAvatar() async {
+    final prefs = await SharedPreferences.getInstance();
+    final path = prefs.getString('avatarPath');
+    if (mounted) setState(() => _avatarPath = path);
+  }
 
   @override
   void initState() {
     super.initState();
     centerIndex = windowDays ~/ 2;
-    _pageController = PageController(initialPage: centerIndex);
+    selectedDayIndex = centerIndex;
+    _loadAvatar();
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.userScrollDirection ==
+          ScrollDirection.reverse) {
+        if (_fabVisible) setState(() => _fabVisible = false);
+      } else if (_scrollController.position.userScrollDirection ==
+          ScrollDirection.forward) {
+        if (!_fabVisible) setState(() => _fabVisible = true);
+      }
+    });
   }
 
-  DateTime dateForIndex(int idx) {
-    final offset = idx - centerIndex;
-    return DateTime.now().add(Duration(days: offset));
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
-  String labelForSection(String key) {
-    switch (key) {
-      case 'wake':
-        return 'Wake up (6-8)';
-      case 'morning':
-        return 'Morning (8-12)';
-      case 'noon':
-        return 'Noon (12-13)';
-      case 'afternoon':
-        return 'Afternoon (13-17)';
-      case 'evening':
-        return 'Evening (17-22)';
-      default:
-        return key;
-    }
-  }
-
-  final sections = ['wake', 'morning', 'noon', 'afternoon', 'evening'];
+  DateTime dateForIndex(int idx) =>
+      DateTime.now().add(Duration(days: idx - centerIndex));
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<TaskProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dayline Planner'),
+        leading: IconButton(
+          tooltip: 'Profile',
+          icon: _avatarPath != null && _avatarPath!.isNotEmpty
+              ? CircleAvatar(
+                  radius: 14,
+                  backgroundImage: FileImage(File(_avatarPath!)),
+                )
+              : const Icon(Icons.person),
+          onPressed: () => Navigator.pushNamed(context, '/profile'),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.list_alt),
-            onPressed: () => Navigator.pushNamed(context, '/tasks'),
+            icon: const Icon(Icons.date_range),
             tooltip: 'Tasks',
-          ),
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () => Navigator.pushNamed(context, '/profile'),
-            tooltip: 'Profile',
+            onPressed: () => Navigator.pushNamed(context, '/tasks'),
           ),
         ],
+        title: Text(
+          'Dayline Planner',
+          style: TextStyle(
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await Navigator.pushNamed(context, CreateTaskScreen.routeName);
-        },
-        child: const Icon(Icons.add),
+      floatingActionButton: AnimatedSlide(
+        duration: const Duration(milliseconds: 250),
+        offset: _fabVisible ? Offset.zero : const Offset(2, 0),
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 250),
+          opacity: _fabVisible ? 1 : 0,
+          child: FloatingActionButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => EditTaskScreen(
+                    initialDate: dateForIndex(selectedDayIndex)),
+              ),
+            ),
+            child: const Icon(Icons.add),
+          ),
+        ),
       ),
       body: Column(
         children: [
-          SizedBox(
-            height: 86,
-            child: HorizontalDates(
-              windowDays: windowDays,
-              dateForIndex: dateForIndex,
-              pageController: _pageController,
-            ),
+          DaySelector(
+            windowDays: windowDays,
+            selectedIndex: selectedDayIndex,
+            onSelected: (idx) => setState(() => selectedDayIndex = idx),
+            dateForIndex: dateForIndex,
           ),
           Expanded(
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: windowDays,
-              onPageChanged: (idx) {
-                setState(() {
-                  baseDate = dateForIndex(idx);
-                });
-              },
-              itemBuilder: (context, idx) {
-                final day = dateForIndex(idx);
-                final tasks = provider.tasksForDate(day);
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: sections.map((s) {
-                      final sectionTasks = tasks.where((t) => t.section == s).toList();
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(child: Text(labelForSection(s), style: const TextStyle(fontWeight: FontWeight.bold))),
-                                  IconButton(
-                                    icon: const Icon(Icons.add),
-                                    onPressed: () {
-                                      Navigator.pushNamed(
-                                        context,
-                                        CreateTaskScreen.routeName,
-                                        arguments: {'defaultDate': day, 'defaultSection': s},
-                                      );
-                                    },
-                                  )
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              if (sectionTasks.isEmpty)
-                                const Text('No tasks')
-                              else
-                                Column(
-                                  children: sectionTasks.map((t) => TaskTile(task: t, date: day)).toList(),
-                                )
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                );
-              },
+            child: DayContent(
+              date: dateForIndex(selectedDayIndex),
+              scrollController: _scrollController,
             ),
           ),
         ],
       ),
     );
   }
-
 }

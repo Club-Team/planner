@@ -1,13 +1,17 @@
+import 'package:dayline_planner/providers/section_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:dayline_planner/models/task_model.dart';
 import 'package:dayline_planner/providers/task_provider.dart';
+import 'package:dayline_planner/utils/icon_helper.dart';
 
 class EditTaskScreen extends StatefulWidget {
   final TaskModel? task; // null → create mode
+  final DateTime? initialDate; // 👈 add this
+  final String? section;
 
-  const EditTaskScreen({super.key, this.task});
+  const EditTaskScreen({super.key, this.task, this.initialDate, this.section});
 
   @override
   State<EditTaskScreen> createState() => _EditTaskScreenState();
@@ -23,29 +27,37 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   late int _everyNDays;
   late List<int> _weekdays;
   late DateTime _date;
-
-  final Color primaryColor = const Color.fromRGBO(90, 130, 130, 1);
-  final Color backgroundColor = const Color.fromRGBO(247, 240, 22, 1);
+  late String _section;
 
   @override
   void initState() {
     super.initState();
     final t = widget.task;
+    _section = widget.task?.section ??
+        widget.section ??
+        Provider.of<SectionProvider>(context, listen: false).sections[0];
     _title = t?.title ?? '';
     _description = t?.description ?? '';
     _isRecurring = t?.isRecurring ?? false;
     _recurrenceType = t?.recurrenceType ?? RecurrenceType.none;
     _everyNDays = t?.everyNDays ?? 1;
     _weekdays = List<int>.from(t?.weekdays ?? []);
-    _date = t?.date ?? DateTime.now();
+    _date = t?.date ?? widget.initialDate ?? DateTime.now();
   }
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
       initialDate: _date,
-      firstDate: DateTime(2020),
+      firstDate: DateTime.now(),
       lastDate: DateTime(2100),
+      builder: (context, child) {
+        // make date picker also follow theme
+        return Theme(
+          data: Theme.of(context),
+          child: child!,
+        );
+      },
     );
     if (picked != null) setState(() => _date = picked);
   }
@@ -69,23 +81,26 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       id: widget.task?.id,
       title: _title.trim(),
       description: _description.trim(),
-      section: widget.task?.section ?? 'morning',
+      section: _section,
       isRecurring: _isRecurring,
       recurrenceType: _isRecurring ? _recurrenceType : RecurrenceType.none,
       everyNDays: _everyNDays,
-      weekdays: _isRecurring && _recurrenceType == RecurrenceType.specificWeekDays
-          ? _weekdays
-          : [],
+      weekdays:
+          _isRecurring && _recurrenceType == RecurrenceType.specificWeekDays
+              ? _weekdays
+              : [],
       date: _date,
       createdAt: widget.task?.createdAt,
     );
 
     if (widget.task == null) {
       provider.addTask(updatedTask);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Task created!')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Task created!')));
     } else {
       provider.updateTask(updatedTask);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Task updated!')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Task updated!')));
     }
 
     Navigator.pop(context);
@@ -95,21 +110,24 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     final provider = Provider.of<TaskProvider>(context, listen: false);
     if (widget.task != null) {
       provider.deleteTask(widget.task!);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Task deleted')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Task deleted')));
     }
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     final isEdit = widget.task != null;
     final dateStr = DateFormat('yMMMd').format(_date);
 
     return Scaffold(
-      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: Text(isEdit ? 'Edit Task' : 'Create Task'),
-        backgroundColor: primaryColor,
         actions: [
           if (isEdit)
             IconButton(
@@ -125,44 +143,77 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildLabel('Title'),
+              _buildLabel('Title', textTheme, colorScheme),
               TextFormField(
                 initialValue: _title,
-                decoration: _inputDecoration('Enter task title'),
-                validator: (v) => v == null || v.isEmpty ? 'Enter a title' : null,
+                decoration: _inputDecoration('Enter task title', theme),
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'Enter a title' : null,
                 onChanged: (v) => _title = v,
               ),
               const SizedBox(height: 16),
-              _buildLabel('Description'),
+              _buildLabel('Description', textTheme, colorScheme),
               TextFormField(
                 initialValue: _description,
                 maxLines: 3,
-                decoration: _inputDecoration('Enter description'),
+                decoration: _inputDecoration('Enter description', theme),
                 onChanged: (v) => _description = v,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
+              _buildLabel('Section', textTheme, colorScheme),
+              DropdownButtonFormField<String>(
+                value: _section,
+                decoration: InputDecoration(labelText: 'Section'),
+                items: context.watch<SectionProvider>().fullSections.map((s) {
+                  final start = s.startTime.format(context);
+                  final end = s.endTime.format(context);
+                  return DropdownMenuItem<String>(
+                    value: s.id, // <- use id now
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(IconHelper.getIconData(
+                            s.iconName)), // map iconName to IconData
+                        const SizedBox(width: 8),
+                        Flexible(
+                          fit: FlexFit.loose,
+                          child: Text(
+                            '${s.title} ($start - $end)',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+                onChanged: (v) => setState(() => _section = v!),
+              ),
+              const SizedBox(height: 16),
               SwitchListTile(
                 title: const Text('Recurring task'),
                 value: _isRecurring,
                 onChanged: (v) => setState(() => _isRecurring = v),
-                activeColor: primaryColor,
+                activeColor: colorScheme.primary,
               ),
               if (!_isRecurring) ...[
-                _buildLabel('Date'),
+                _buildLabel('Date', textTheme, colorScheme),
                 OutlinedButton.icon(
                   onPressed: _pickDate,
                   icon: const Icon(Icons.calendar_today),
                   label: Text(dateStr),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: primaryColor,
-                    side: BorderSide(color: primaryColor),
+                    foregroundColor: colorScheme.primary,
+                    side: BorderSide(color: colorScheme.primary),
                   ),
                 ),
               ],
               if (_isRecurring) ...[
-                _buildLabel('Recurrence'),
+                _buildLabel('Recurrence', textTheme, colorScheme),
                 DropdownButtonFormField<RecurrenceType>(
-                  value: _recurrenceType,
+                  value: _recurrenceType == RecurrenceType.none
+                      ? null
+                      : _recurrenceType,
+                  hint: const Text('Select recurrence type'),
                   items: RecurrenceType.values
                       .where((r) => r != RecurrenceType.none)
                       .map((r) => DropdownMenuItem(
@@ -170,23 +221,39 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                             child: Text(r.name),
                           ))
                       .toList(),
-                  onChanged: (val) => setState(() => _recurrenceType = val!),
-                  decoration: _inputDecoration('Recurrence type'),
+                  onChanged: (val) => setState(
+                      () => _recurrenceType = val ?? RecurrenceType.none),
                 ),
+                if (_recurrenceType == RecurrenceType.everyNDays) ...[
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    initialValue: '2',
+                    keyboardType: TextInputType.number,
+                    decoration:
+                        const InputDecoration(labelText: 'Every N days'),
+                    onChanged: (v) => _everyNDays = int.tryParse(v) ?? 2,
+                  ),
+                ],
                 if (_recurrenceType == RecurrenceType.specificWeekDays) ...[
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 8,
                     children: List.generate(7, (i) {
                       final dayNum = i + 1;
-                      final dayName = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i];
+                      final dayName =
+                          ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i];
                       final selected = _weekdays.contains(dayNum);
                       return FilterChip(
                         label: Text(dayName),
                         selected: selected,
                         onSelected: (_) => _toggleWeekday(dayNum),
-                        selectedColor: primaryColor.withOpacity(0.2),
-                        checkmarkColor: primaryColor,
+                        selectedColor: colorScheme.primary.withOpacity(0.2),
+                        checkmarkColor: colorScheme.primary,
+                        labelStyle: TextStyle(
+                          color: selected
+                              ? colorScheme.primary
+                              : textTheme.bodyMedium?.color,
+                        ),
                       );
                     }),
                   ),
@@ -200,8 +267,11 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   label: Text(isEdit ? 'Save Changes' : 'Create Task'),
                   onPressed: _saveTask,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: theme
+                            .elevatedButtonTheme.style?.foregroundColor
+                            ?.resolve({}) ??
+                        Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -216,20 +286,30 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     );
   }
 
-  InputDecoration _inputDecoration(String label) => InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: primaryColor, width: 2),
-          borderRadius: BorderRadius.circular(10),
-        ),
-      );
+  InputDecoration _inputDecoration(String label, ThemeData theme) {
+    final base = theme.inputDecorationTheme;
+    return InputDecoration(
+      labelText: label,
+      border: base.border,
+      focusedBorder: base.focusedBorder,
+      enabledBorder: base.enabledBorder,
+      filled: base.filled,
+      fillColor: base.fillColor,
+      contentPadding: base.contentPadding,
+      alignLabelWithHint: true, // aligns label to top-left
+    );
+  }
 
-  Widget _buildLabel(String text) => Padding(
+  Widget _buildLabel(
+          String text, TextTheme textTheme, ColorScheme colorScheme) =>
+      Padding(
         padding: const EdgeInsets.only(bottom: 6),
         child: Text(
           text,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryColor),
+          style: textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).textTheme.bodyMedium?.color,
+          ),
         ),
       );
 }

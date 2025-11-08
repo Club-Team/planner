@@ -37,6 +37,8 @@ class TaskProvider extends ChangeNotifier {
       await _db.deleteTask(t.id!);
       _tasks.removeWhere((e) => e.id == t.id);
       notifyListeners();
+      _completions.removeWhere((e) => e.taskId == t.id);
+      notifyListeners();
     }
   }
 
@@ -90,7 +92,7 @@ class TaskProvider extends ChangeNotifier {
   // Return tasks for a specific date, grouped or ungrouped
   List<TaskModel> tasksForDate(DateTime date) {
     return _tasks.where((t) => occursOn(t, date)).toList()
-      ..sort((a,b) => a.section.compareTo(b.section));
+      ..sort((a, b) => a.section.compareTo(b.section));
   }
 
   // total completed count across all dates

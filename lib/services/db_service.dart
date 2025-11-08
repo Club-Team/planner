@@ -15,7 +15,10 @@ class DBService {
     if (_db != null) return;
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, 'dayline.db');
-    _db = await openDatabase(path, version: 1, onCreate: _onCreate);
+    _db = await openDatabase(path, version: 1, onCreate: _onCreate, onOpen: (db) async {
+        // Enable foreign key constraints in SQLite
+        await db.execute('PRAGMA foreign_keys = ON');
+      },);
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -39,7 +42,7 @@ class DBService {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         taskId INTEGER,
         dateIso TEXT,
-        FOREIGN KEY(taskId) REFERENCES tasks(id)
+        FOREIGN KEY(taskId) REFERENCES tasks(id) ON DELETE CASCADE
       );
     ''');
   }
@@ -49,7 +52,8 @@ class DBService {
   }
 
   Future<int> updateTask(TaskModel t) async {
-    return await _db!.update('tasks', t.toMap(), where: 'id = ?', whereArgs: [t.id]);
+    return await _db!
+        .update('tasks', t.toMap(), where: 'id = ?', whereArgs: [t.id]);
   }
 
   Future<int> deleteTask(int id) async {
@@ -66,11 +70,13 @@ class DBService {
   }
 
   Future<int> removeCompletion(int taskId, String dateIso) async {
-    return await _db!.delete('completions', where: 'taskId = ? AND dateIso = ?', whereArgs: [taskId, dateIso]);
+    return await _db!.delete('completions',
+        where: 'taskId = ? AND dateIso = ?', whereArgs: [taskId, dateIso]);
   }
 
   Future<List<Completion>> getCompletionsForDate(String dateIso) async {
-    final rows = await _db!.query('completions', where: 'dateIso = ?', whereArgs: [dateIso]);
+    final rows = await _db!
+        .query('completions', where: 'dateIso = ?', whereArgs: [dateIso]);
     return rows.map((r) => Completion.fromMap(r)).toList();
   }
 

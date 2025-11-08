@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+typedef OnDateSelected = void Function(int idx);
+
 class HorizontalDates extends StatefulWidget {
   final int windowDays;
   final DateTime Function(int idx) dateForIndex;
-  final PageController pageController;
+  final int selectedIndex;
+  final OnDateSelected onSelected;
 
   const HorizontalDates({
     super.key,
     required this.windowDays,
     required this.dateForIndex,
-    required this.pageController,
+    required this.selectedIndex,
+    required this.onSelected,
   });
 
   @override
@@ -25,7 +29,6 @@ class _HorizontalDatesState extends State<HorizontalDates> {
     super.initState();
     _scrollController = ScrollController();
 
-    // Scroll to today's index after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final todayIdx = _findTodayIndex();
       _scrollToCenter(todayIdx);
@@ -44,16 +47,27 @@ class _HorizontalDatesState extends State<HorizontalDates> {
   }
 
   void _scrollToCenter(int idx) {
-    const itemWidth = 72.0 + 12.0; // width + horizontal margin
+    const itemWidth = 60.0 + 12.0;
     final screenWidth = MediaQuery.of(context).size.width;
     final offset = idx * itemWidth - (screenWidth / 2) + (itemWidth / 2);
-    _scrollController.jumpTo(offset.clamp(0, _scrollController.position.maxScrollExtent));
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        offset.clamp(0, _scrollController.position.maxScrollExtent),
+        duration:
+            const Duration(milliseconds: 300), // how long the scroll takes
+        curve: Curves.easeInOut, // how the motion feels
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return SizedBox(
-      height: 86,
+      height: 100,
       child: ListView.builder(
         controller: _scrollController,
         scrollDirection: Axis.horizontal,
@@ -62,42 +76,69 @@ class _HorizontalDatesState extends State<HorizontalDates> {
           final d = widget.dateForIndex(idx);
           final isToday = DateFormat('yyyy-MM-dd').format(d) ==
               DateFormat('yyyy-MM-dd').format(DateTime.now());
+          final isSelected = widget.selectedIndex == idx;
+
+          final Color backgroundColor =
+              isSelected ? colorScheme.primary : theme.cardColor;
+
+          final Color textColor = isSelected
+              ? colorScheme.onPrimary
+              : (isToday ? colorScheme.primary : colorScheme.onSurface);
+
+          final BoxBorder? border = (isToday && !isSelected)
+              ? Border.all(color: colorScheme.primary, width: 2)
+              : null;
 
           return GestureDetector(
             onTap: () {
-              widget.pageController.animateToPage(
-                idx,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
+              widget.onSelected(idx);
+              _scrollToCenter(idx);
             },
-            child: Container(
-              width: 72,
-              margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
-              decoration: BoxDecoration(
-                color: isToday ? Theme.of(context).primaryColor : Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              alignment: Alignment.center,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    DateFormat.E().format(d),
-                    style: TextStyle(
-                      color: isToday ? Colors.white : Colors.black,
-                    ),
+            child: AnimatedScale(
+              scale: isSelected ? 1.12 : 1.0,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeOutCubic,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeOutCubic,
+                width: 60,
+                margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
+                decoration: BoxDecoration(
+                  color: backgroundColor,
+                  borderRadius: BorderRadius.circular(12),
+                  border: border,
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: colorScheme.primary.withOpacity(0.25),
+                            blurRadius: 12,
+                            offset: const Offset(0, 2),
+                          )
+                        ]
+                      : [],
+                ),
+                alignment: Alignment.center,
+                child: AnimatedOpacity(
+                  opacity: isSelected ? 1.0 : 0.85,
+                  duration: const Duration(milliseconds: 300),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        DateFormat.E().format(d),
+                        style: textTheme.bodySmall?.copyWith(color: textColor),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        DateFormat.d().format(d),
+                        style: textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    DateFormat.d().format(d),
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: isToday ? Colors.white : Colors.black,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           );
